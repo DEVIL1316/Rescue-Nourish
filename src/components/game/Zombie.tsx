@@ -50,21 +50,21 @@ export function Zombie({ zombie }: ZombieProps) {
     switch (zombie.type) {
       case 'runner':
         return {
-          skin: 'hsl(60, 20%, 40%)',
-          clothes: 'hsl(0, 30%, 25%)',
-          blood: 'hsl(0, 80%, 30%)'
+          skin: 'hsl(60, 30%, 50%)',
+          clothes: 'hsl(0, 40%, 35%)',
+          blood: 'hsl(0, 80%, 40%)'
         };
       case 'tank':
         return {
-          skin: 'hsl(120, 15%, 30%)',
-          clothes: 'hsl(0, 0%, 20%)',
-          blood: 'hsl(0, 90%, 25%)'
+          skin: 'hsl(120, 25%, 40%)',
+          clothes: 'hsl(0, 0%, 30%)',
+          blood: 'hsl(0, 90%, 35%)'
         };
       default:
         return {
-          skin: 'hsl(90, 25%, 35%)',
-          clothes: 'hsl(210, 10%, 30%)',
-          blood: 'hsl(0, 85%, 28%)'
+          skin: 'hsl(90, 35%, 45%)',
+          clothes: 'hsl(210, 20%, 40%)',
+          blood: 'hsl(0, 85%, 38%)'
         };
     }
   };
@@ -72,11 +72,11 @@ export function Zombie({ zombie }: ZombieProps) {
   const getZombieScale = (): [number, number, number] => {
     switch (zombie.type) {
       case 'tank':
-        return [1.3, 1.3, 1.3];
+        return [1.8, 1.8, 1.8];
       case 'runner':
-        return [0.9, 0.9, 0.9];
+        return [1.2, 1.2, 1.2];
       default:
-        return [1, 1, 1];
+        return [1.5, 1.5, 1.5];
     }
   };
   

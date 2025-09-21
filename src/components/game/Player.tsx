@@ -65,9 +65,10 @@ export function Player() {
       meshRef.current.position.set(newPosition.x, newPosition.y + 0.5, newPosition.z);
     }
     
-    // Update camera to follow player
+    // Update camera to follow player from a better angle
     state.camera.position.x = playerPosition.x;
-    state.camera.position.z = playerPosition.z + 25;
+    state.camera.position.y = 30;
+    state.camera.position.z = playerPosition.z + 30;
     state.camera.lookAt(playerPosition.x, 0, playerPosition.z);
   });
   

@@ -27,8 +27,8 @@ export function GameScene() {
       <Canvas shadows>
         <PerspectiveCamera
           makeDefault
-          position={[0, 25, 25]}
-          fov={60}
+          position={[0, 30, 30]}
+          fov={75}
           near={0.1}
           far={1000}
         />

@@ -23,13 +23,37 @@ export function ZombieManager() {
   
   useEffect(() => {
     if (gameStatus === 'playing' && zombies.length === 0) {
+      console.log('Spawning initial wave, current wave:', wave);
       // Spawn initial wave
-      spawnWave();
+      const zombieCount = 3 + wave * 2;
+      
+      for (let i = 0; i < zombieCount; i++) {
+        const angle = (Math.PI * 2 * i) / zombieCount;
+        const distance = 20 + Math.random() * 30;
+        
+        const zombie: ZombieType = {
+          id: `zombie-${Date.now()}-${Math.random()}`,
+          position: {
+            x: Math.cos(angle) * distance,
+            y: 0,
+            z: Math.sin(angle) * distance,
+          },
+          health: wave < 3 ? 50 : wave < 6 ? 75 : 100,
+          type: Math.random() < 0.7 ? 'walker' : Math.random() < 0.9 ? 'runner' : 'tank',
+          speed: Math.random() < 0.7 ? 2 : Math.random() < 0.9 ? 4 : 1.5,
+          damage: Math.random() < 0.7 ? 10 : Math.random() < 0.9 ? 15 : 25,
+          target: null,
+        };
+        
+        console.log('Spawning zombie:', zombie);
+        spawnZombie(zombie);
+      }
     }
-  }, [gameStatus, wave]);
+  }, [gameStatus, wave, zombies.length, spawnZombie]);
   
   const spawnWave = () => {
     const zombieCount = 3 + wave * 2;
+    console.log('Spawning new wave with', zombieCount, 'zombies');
     
     for (let i = 0; i < zombieCount; i++) {
       setTimeout(() => {

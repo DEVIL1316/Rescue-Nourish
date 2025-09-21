@@ -18,12 +18,12 @@ export function Lighting() {
   return (
     <>
       {/* Ambient light for basic visibility */}
-      <ambientLight intensity={0.1} color="hsl(200, 20%, 20%)" />
+      <ambientLight intensity={0.3} color="hsl(200, 20%, 50%)" />
       
       {/* Main directional light (moonlight) */}
       <directionalLight
-        position={[10, 20, 10]}
-        intensity={0.4}
+        position={[10, 30, 10]}
+        intensity={0.8}
         color="hsl(200, 50%, 70%)"
         castShadow
         shadow-mapSize={[2048, 2048]}
