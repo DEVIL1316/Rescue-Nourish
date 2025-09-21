@@ -73,16 +73,107 @@ export function Player() {
   
   return (
     <group position={[playerPosition.x, playerPosition.y, playerPosition.z]}>
-      <mesh ref={meshRef} castShadow>
-        <capsuleGeometry args={[0.5, 1, 4, 8]} />
-        <meshStandardMaterial color="hsl(200, 60%, 40%)" emissive="hsl(200, 60%, 20%)" emissiveIntensity={0.2} />
-      </mesh>
+      {/* Player Body */}
+      <group>
+        {/* Torso */}
+        <mesh castShadow position={[0, 1.2, 0]}>
+          <boxGeometry args={[0.6, 0.8, 0.3]} />
+          <meshStandardMaterial color="hsl(120, 20%, 25%)" />
+        </mesh>
+        
+        {/* Head */}
+        <mesh castShadow position={[0, 1.8, 0]}>
+          <sphereGeometry args={[0.25, 16, 16]} />
+          <meshStandardMaterial color="hsl(30, 40%, 70%)" />
+        </mesh>
+        
+        {/* Helmet */}
+        <mesh castShadow position={[0, 1.9, 0]}>
+          <sphereGeometry args={[0.28, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+          <meshStandardMaterial color="hsl(120, 10%, 20%)" metalness={0.3} roughness={0.7} />
+        </mesh>
+        
+        {/* Left Arm */}
+        <mesh castShadow position={[-0.4, 1.1, 0]} rotation={[0, 0, 0.2]}>
+          <cylinderGeometry args={[0.08, 0.08, 0.6]} />
+          <meshStandardMaterial color="hsl(120, 20%, 25%)" />
+        </mesh>
+        
+        {/* Right Arm holding weapon */}
+        <mesh castShadow position={[0.4, 1.1, -0.2]} rotation={[-0.5, 0, -0.2]}>
+          <cylinderGeometry args={[0.08, 0.08, 0.6]} />
+          <meshStandardMaterial color="hsl(120, 20%, 25%)" />
+        </mesh>
+        
+        {/* Left Leg */}
+        <mesh castShadow position={[-0.15, 0.4, 0]}>
+          <cylinderGeometry args={[0.1, 0.08, 0.8]} />
+          <meshStandardMaterial color="hsl(120, 10%, 15%)" />
+        </mesh>
+        
+        {/* Right Leg */}
+        <mesh castShadow position={[0.15, 0.4, 0]}>
+          <cylinderGeometry args={[0.1, 0.08, 0.8]} />
+          <meshStandardMaterial color="hsl(120, 10%, 15%)" />
+        </mesh>
+        
+        {/* Boots */}
+        <mesh castShadow position={[-0.15, 0, 0.05]}>
+          <boxGeometry args={[0.18, 0.1, 0.25]} />
+          <meshStandardMaterial color="hsl(0, 0%, 10%)" />
+        </mesh>
+        <mesh castShadow position={[0.15, 0, 0.05]}>
+          <boxGeometry args={[0.18, 0.1, 0.25]} />
+          <meshStandardMaterial color="hsl(0, 0%, 10%)" />
+        </mesh>
+        
+        {/* Tactical Vest */}
+        <mesh castShadow position={[0, 1.2, 0.18]}>
+          <boxGeometry args={[0.5, 0.6, 0.1]} />
+          <meshStandardMaterial color="hsl(0, 0%, 15%)" metalness={0.1} roughness={0.9} />
+        </mesh>
+        
+        {/* Backpack */}
+        <mesh castShadow position={[0, 1.2, -0.25]}>
+          <boxGeometry args={[0.4, 0.5, 0.2]} />
+          <meshStandardMaterial color="hsl(120, 10%, 18%)" />
+        </mesh>
+      </group>
       
-      {/* Weapon */}
-      <mesh position={[0.4, 0.5, -0.5]} rotation={[0, 0, -0.2]}>
-        <boxGeometry args={[0.1, 0.1, 0.8]} />
-        <meshStandardMaterial color="hsl(0, 0%, 20%)" metalness={0.8} roughness={0.2} />
-      </mesh>
+      {/* Weapon - Assault Rifle */}
+      <group position={[0.35, 1.0, -0.4]} rotation={[0, 0, -0.2]}>
+        {/* Gun Body */}
+        <mesh castShadow>
+          <boxGeometry args={[0.08, 0.15, 0.8]} />
+          <meshStandardMaterial color="hsl(0, 0%, 10%)" metalness={0.8} roughness={0.3} />
+        </mesh>
+        
+        {/* Gun Barrel */}
+        <mesh castShadow position={[0, 0, -0.5]}>
+          <cylinderGeometry args={[0.03, 0.03, 0.3]} />
+          <meshStandardMaterial color="hsl(0, 0%, 5%)" metalness={0.9} roughness={0.2} />
+        </mesh>
+        
+        {/* Magazine */}
+        <mesh castShadow position={[0, -0.1, 0.1]}>
+          <boxGeometry args={[0.04, 0.15, 0.08]} />
+          <meshStandardMaterial color="hsl(0, 0%, 15%)" metalness={0.7} roughness={0.4} />
+        </mesh>
+        
+        {/* Scope */}
+        <mesh castShadow position={[0, 0.1, 0]}>
+          <cylinderGeometry args={[0.025, 0.025, 0.15]} />
+          <meshStandardMaterial color="hsl(0, 0%, 8%)" metalness={0.6} roughness={0.3} />
+        </mesh>
+        
+        {/* Muzzle Flash (when shooting) */}
+        {Math.random() > 0.95 && (
+          <mesh position={[0, 0, -0.65]}>
+            <coneGeometry args={[0.15, 0.3, 6]} />
+            <meshBasicMaterial color="hsl(38, 100%, 70%)" transparent opacity={0.8} />
+          </mesh>
+        )}
+      </group>
     </group>
   );
 }
