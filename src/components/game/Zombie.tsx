@@ -258,16 +258,6 @@ export function Zombie({ zombie }: ZombieProps) {
           color={zombie.health > 50 ? 'hsl(120, 60%, 40%)' : zombie.health > 25 ? 'hsl(38, 92%, 50%)' : 'hsl(0, 72%, 45%)'} 
         />
       </mesh>
-      
-      {/* Type indicator */}
-      <mesh position={[0, 3, 0]}>
-        <planeGeometry args={[0.8, 0.2]} />
-        <meshBasicMaterial transparent opacity={0}>
-          <span style={{ color: 'white', fontSize: '0.1' }}>
-            {zombie.type.toUpperCase()}
-          </span>
-        </meshBasicMaterial>
-      </mesh>
     </group>
   );
 }
