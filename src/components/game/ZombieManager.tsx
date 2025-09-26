@@ -29,7 +29,7 @@ export function ZombieManager() {
       
       for (let i = 0; i < zombieCount; i++) {
         const angle = (Math.PI * 2 * i) / zombieCount;
-        const distance = 20 + Math.random() * 30;
+        const distance = 10 + Math.random() * 15;
         
         const zombie: ZombieType = {
           id: `zombie-${Date.now()}-${Math.random()}`,
@@ -58,7 +58,7 @@ export function ZombieManager() {
     for (let i = 0; i < zombieCount; i++) {
       setTimeout(() => {
         const angle = (Math.PI * 2 * i) / zombieCount;
-        const distance = 20 + Math.random() * 30;
+        const distance = 10 + Math.random() * 15;
         
         const zombie: ZombieType = {
           id: `zombie-${Date.now()}-${i}`,
