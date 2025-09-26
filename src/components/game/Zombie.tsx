@@ -72,11 +72,11 @@ export function Zombie({ zombie }: ZombieProps) {
   const getZombieScale = (): [number, number, number] => {
     switch (zombie.type) {
       case 'tank':
-        return [1.8, 1.8, 1.8];
+        return [2.5, 2.5, 2.5];
       case 'runner':
-        return [1.2, 1.2, 1.2];
+        return [1.8, 1.8, 1.8];
       default:
-        return [1.5, 1.5, 1.5];
+        return [2.2, 2.2, 2.2];
     }
   };
   

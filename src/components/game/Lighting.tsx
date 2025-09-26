@@ -1,30 +1,25 @@
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { SpotLight } from 'three';
+import { useGameStore } from '@/store/gameStore';
 
 export function Lighting() {
-  const spotLightRef = useRef<SpotLight>(null);
   const time = useRef(0);
+  const playerPosition = useGameStore((state) => state.playerPosition);
   
   useFrame((state, delta) => {
     time.current += delta;
-    
-    // Flickering effect for dramatic atmosphere
-    if (spotLightRef.current) {
-      spotLightRef.current.intensity = 0.8 + Math.sin(time.current * 10) * 0.1;
-    }
   });
   
   return (
     <>
-      {/* Ambient light for basic visibility */}
-      <ambientLight intensity={0.3} color="hsl(200, 20%, 50%)" />
+      {/* Ambient daylight for natural outdoor lighting */}
+      <ambientLight intensity={0.6} color="hsl(45, 70%, 80%)" />
       
-      {/* Main directional light (moonlight) */}
+      {/* Main sunlight */}
       <directionalLight
-        position={[10, 30, 10]}
-        intensity={0.8}
-        color="hsl(200, 50%, 70%)"
+        position={[20, 40, 20]}
+        intensity={1.2}
+        color="hsl(50, 80%, 95%)"
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-camera-near={0.1}
@@ -35,33 +30,27 @@ export function Lighting() {
         shadow-camera-bottom={-50}
       />
       
-      {/* Red emergency lights */}
-      <pointLight
-        position={[-20, 5, -20]}
-        intensity={0.5}
-        color="hsl(0, 100%, 50%)"
-        distance={30}
-      />
-      <pointLight
-        position={[20, 5, 20]}
-        intensity={0.5}
-        color="hsl(0, 100%, 50%)"
-        distance={30}
+      {/* Secondary light for shadows */}
+      <directionalLight
+        position={[-15, 25, -10]}
+        intensity={0.4}
+        color="hsl(200, 30%, 85%)"
       />
       
-      {/* Flickering spotlight for dramatic effect */}
-      <spotLight
-        ref={spotLightRef}
-        position={[0, 30, 0]}
-        angle={Math.PI / 4}
-        penumbra={0.5}
-        intensity={0.8}
-        color="hsl(60, 20%, 80%)"
-        castShadow
-      />
+      {/* Player flashlight */}
+      <group position={[playerPosition.x, playerPosition.y + 2, playerPosition.z]}>
+        <spotLight
+          angle={0.4}
+          penumbra={0.3}
+          intensity={0.5}
+          distance={30}
+          color="hsl(55, 70%, 95%)"
+          castShadow
+        />
+      </group>
       
-      {/* Fog for atmosphere */}
-      <fog attach="fog" args={['hsl(0, 0%, 5%)', 20, 100]} />
+      {/* Fog for depth */}
+      <fog attach="fog" args={['hsl(200, 30%, 70%)', 50, 200]} />
     </>
   );
 }

@@ -1,10 +1,12 @@
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Grid, Environment, PerspectiveCamera } from '@react-three/drei';
+import { OrbitControls, Environment, PerspectiveCamera } from '@react-three/drei';
 import { Suspense, useEffect } from 'react';
 import { Player } from './Player';
 import { ZombieManager } from './ZombieManager';
 import { Map } from './Map';
 import { Lighting } from './Lighting';
+import { Buildings } from './Buildings';
+import { Trees } from './Trees';
 import { useGameStore } from '@/store/gameStore';
 
 export function GameScene() {
@@ -23,7 +25,7 @@ export function GameScene() {
   }, [gameStatus]);
   
   return (
-    <div className="w-full h-screen relative bg-gradient-dark">
+    <div className="w-full h-screen relative" style={{ background: 'linear-gradient(to bottom, #87CEEB 0%, #98D8C8 50%, #8B7355 100%)' }}>
       <Canvas shadows>
         <PerspectiveCamera
           makeDefault
@@ -35,24 +37,26 @@ export function GameScene() {
         
         <Suspense fallback={null}>
           <Lighting />
-          <Environment preset="night" />
+          <Environment preset="forest" />
           
           <Map />
+          <Buildings />
+          <Trees />
           <Player />
           <ZombieManager />
           
-          <Grid
-            args={[200, 200]}
-            cellSize={2}
-            cellThickness={0.5}
-            cellColor="#111111"
-            sectionSize={10}
-            sectionThickness={1}
-            sectionColor="#222222"
-            fadeDistance={150}
-            fadeStrength={1}
-            followCamera
-          />
+          {/* Ground plane */}
+          <mesh 
+            rotation={[-Math.PI / 2, 0, 0]} 
+            position={[0, -0.01, 0]}
+            receiveShadow
+          >
+            <planeGeometry args={[200, 200]} />
+            <meshStandardMaterial 
+              color="hsl(100, 40%, 20%)"
+              roughness={0.95}
+            />
+          </mesh>
         </Suspense>
         
         <OrbitControls

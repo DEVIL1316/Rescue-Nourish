@@ -90,6 +90,38 @@ export const useGameStore = create<GameState>((set, get) => ({
       fireRate: 2,
       range: 20,
     },
+    {
+      name: 'Shotgun',
+      damage: 60,
+      ammo: 8,
+      maxAmmo: 8,
+      fireRate: 1,
+      range: 10,
+    },
+    {
+      name: 'Assault Rifle',
+      damage: 35,
+      ammo: 30,
+      maxAmmo: 30,
+      fireRate: 6,
+      range: 40,
+    },
+    {
+      name: 'Sniper Rifle',
+      damage: 120,
+      ammo: 5,
+      maxAmmo: 5,
+      fireRate: 0.5,
+      range: 100,
+    },
+    {
+      name: 'SMG',
+      damage: 20,
+      ammo: 40,
+      maxAmmo: 40,
+      fireRate: 10,
+      range: 25,
+    },
   ],
   
   // Initial zombies
