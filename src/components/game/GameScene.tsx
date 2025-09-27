@@ -43,7 +43,7 @@ export function GameScene() {
           <Buildings />
           <Trees />
           <Player />
-          {/* Removed ZombieManager to remove moving zombies */}
+          <ZombieManager />
           
           {/* Ground plane - much larger */}
           <mesh 
