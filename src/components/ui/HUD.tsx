@@ -127,8 +127,9 @@ export function HUD() {
         </div>
         
         {/* Controls hint */}
-        <div className="text-center mt-4 text-muted-foreground text-sm">
-          WASD: Move | Mouse: Aim | Click: Shoot | R: Reload | ESC: Pause
+        <div className="text-center mt-4 text-muted-foreground text-sm space-y-1">
+          <div>WASD: Move | Space: Jump | Mouse: Aim & Shoot</div>
+          <div>1/2/3: Switch Weapons | ESC: Pause</div>
         </div>
       </div>
     </>
