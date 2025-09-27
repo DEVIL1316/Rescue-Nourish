@@ -25,6 +25,7 @@ export function Player() {
     s: false,
     d: false,
     space: false,
+    shift: false,
   });
   
   const isShooting = useRef(false);
@@ -42,6 +43,11 @@ export function Player() {
       // Jump
       if (key === ' ') {
         keys.current.space = true;
+      }
+      
+      // Sprint
+      if (key === 'shift') {
+        keys.current.shift = true;
       }
       
       // Weapon switching
@@ -62,6 +68,12 @@ export function Player() {
       }
       if (key === ' ') {
         keys.current.space = false;
+      }
+      if (key === 'shift') {
+        keys.current.shift = false;
+      }
+      if (key === 'shift') {
+        keys.current.shift = false;
       }
     };
     
@@ -93,7 +105,11 @@ export function Player() {
   useFrame((state, delta) => {
     if (!meshRef.current || gameStatus !== 'playing') return;
     
-    const speed = 15;
+    // Speed: normal = 15, sprint = 25
+    const baseSpeed = 15;
+    const sprintMultiplier = 1.7;
+    const speed = keys.current.shift ? baseSpeed * sprintMultiplier : baseSpeed;
+    
     const moveVector = new Vector3(0, 0, 0);
     
     // Horizontal movement
