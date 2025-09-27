@@ -43,15 +43,15 @@ export function GameScene() {
           <Buildings />
           <Trees />
           <Player />
-          <ZombieManager />
+          {/* Removed ZombieManager to remove moving zombies */}
           
-          {/* Ground plane */}
+          {/* Ground plane - much larger */}
           <mesh 
             rotation={[-Math.PI / 2, 0, 0]} 
             position={[0, -0.01, 0]}
             receiveShadow
           >
-            <planeGeometry args={[200, 200]} />
+            <planeGeometry args={[800, 800]} />
             <meshStandardMaterial 
               color="hsl(100, 40%, 20%)"
               roughness={0.95}

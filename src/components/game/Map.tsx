@@ -18,9 +18,9 @@ export function Map() {
   
   return (
     <>
-      {/* Ground */}
+      {/* Ground - expanded to match larger play area */}
       <mesh receiveShadow position={[0, -0.5, 0]}>
-        <boxGeometry args={[200, 1, 200]} />
+        <boxGeometry args={[800, 1, 800]} />
         <meshStandardMaterial 
           color="hsl(0, 0%, 8%)" 
           roughness={0.9}

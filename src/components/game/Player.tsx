@@ -73,7 +73,7 @@ export function Player() {
   });
   
   return (
-    <group position={[playerPosition.x, playerPosition.y, playerPosition.z]}>
+    <group position={[playerPosition.x, playerPosition.y, playerPosition.z]} scale={[2, 2, 2]}>
       {/* Player Body */}
       <group>
         {/* Torso */}
