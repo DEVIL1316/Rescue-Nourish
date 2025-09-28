@@ -18,15 +18,18 @@ export function Map() {
   
   return (
     <>
-      {/* Ground - expanded to match larger play area */}
-      <mesh receiveShadow position={[0, -0.5, 0]}>
-        <boxGeometry args={[800, 1, 800]} />
+      {/* Ground plane at y = 0 */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
+        <planeGeometry args={[100, 100]} />
         <meshStandardMaterial 
-          color="hsl(0, 0%, 8%)" 
-          roughness={0.9}
-          metalness={0.1}
+          color="hsl(120, 25%, 25%)" 
+          roughness={0.95}
+          metalness={0.05}
         />
       </mesh>
+      
+      {/* Grid helper for better ground visibility */}
+      <gridHelper args={[100, 50, 'hsl(0, 0%, 25%)', 'hsl(0, 0%, 15%)']} position={[0, 0.01, 0]} />
       
       {/* Safe zone indicator */}
       <mesh 

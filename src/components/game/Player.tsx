@@ -123,7 +123,9 @@ export function Player() {
       moveVector.normalize().multiplyScalar(speed * delta);
     }
     
-    // Jumping
+    // Jumping with proper ground physics
+    const groundLevel = 0; // Ground is at y = 0
+    
     if (keys.current.space && isGrounded.current) {
       velocity.current.y = jumpHeight;
       isGrounded.current = false;
@@ -139,19 +141,21 @@ export function Player() {
       z: playerPosition.z + moveVector.z,
     };
     
-    // Ground collision
-    if (newPosition.y <= 0) {
-      newPosition.y = 0;
+    // Ground collision - keep player on ground
+    if (newPosition.y <= groundLevel) {
+      newPosition.y = groundLevel;
       velocity.current.y = 0;
       isGrounded.current = true;
     }
     
     // Clamp to map bounds
-    newPosition.x = Math.max(-395, Math.min(395, newPosition.x));
-    newPosition.z = Math.max(-395, Math.min(395, newPosition.z));
+    newPosition.x = Math.max(-45, Math.min(45, newPosition.x));
+    newPosition.z = Math.max(-45, Math.min(45, newPosition.z));
     
     movePlayer(newPosition);
-    meshRef.current.position.set(newPosition.x, newPosition.y + 1, newPosition.z);
+    
+    // Update mesh position - player model stays at ground level
+    meshRef.current.position.set(newPosition.x, newPosition.y, newPosition.z);
     
     // Shooting
     shootTimer.current += delta;
@@ -270,7 +274,7 @@ export function Player() {
   };
   
   return (
-    <group ref={meshRef} position={[playerPosition.x, playerPosition.y + 1, playerPosition.z]} scale={[2, 2, 2]}>
+    <group ref={meshRef} position={[playerPosition.x, playerPosition.y, playerPosition.z]} scale={[2, 2, 2]}>
       {/* Player Body */}
       <group>
         {/* Torso */}
