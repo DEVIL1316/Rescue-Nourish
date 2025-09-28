@@ -1,7 +1,10 @@
 import { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
-import { Mesh, Group } from 'three';
+import { useFrame, useLoader } from '@react-three/fiber';
+import { Mesh, Group, TextureLoader } from 'three';
 import { Zombie as ZombieType } from '@/store/gameStore';
+import zombieNormalTexture from '@/assets/zombie-normal.png';
+import zombieRunnerTexture from '@/assets/zombie-runner.png';
+import zombieTankTexture from '@/assets/zombie-tank.png';
 
 interface ZombieProps {
   zombie: ZombieType;
@@ -15,6 +18,15 @@ export function Zombie({ zombie }: ZombieProps) {
   const leftArmRef = useRef<Group>(null);
   const rightArmRef = useRef<Group>(null);
   const headRef = useRef<Group>(null);
+  
+  // Load textures based on zombie type
+  const textureMap = {
+    normal: zombieNormalTexture,
+    runner: zombieRunnerTexture,
+    tank: zombieTankTexture
+  };
+  
+  const texture = useLoader(TextureLoader, textureMap[zombie.type]);
   
   useFrame((_, delta) => {
     if (!groupRef.current) return;
@@ -46,29 +58,6 @@ export function Zombie({ zombie }: ZombieProps) {
     groupRef.current.position.y = Math.abs(Math.sin(animationTime.current * 2)) * 0.1;
   });
   
-  const getZombieColors = () => {
-    switch (zombie.type) {
-      case 'runner':
-        return {
-          skin: 'hsl(60, 30%, 50%)',
-          clothes: 'hsl(0, 40%, 35%)',
-          blood: 'hsl(0, 80%, 40%)'
-        };
-      case 'tank':
-        return {
-          skin: 'hsl(120, 25%, 40%)',
-          clothes: 'hsl(0, 0%, 30%)',
-          blood: 'hsl(0, 90%, 35%)'
-        };
-      default:
-        return {
-          skin: 'hsl(90, 35%, 45%)',
-          clothes: 'hsl(210, 20%, 40%)',
-          blood: 'hsl(0, 85%, 38%)'
-        };
-    }
-  };
-  
   const getZombieScale = (): [number, number, number] => {
     switch (zombie.type) {
       case 'tank':
@@ -80,7 +69,6 @@ export function Zombie({ zombie }: ZombieProps) {
     }
   };
   
-  const colors = getZombieColors();
   const scale = getZombieScale();
   
   return (
@@ -89,45 +77,35 @@ export function Zombie({ zombie }: ZombieProps) {
       position={[zombie.position.x, zombie.position.y, zombie.position.z]}
       scale={scale}
     >
-      {/* Torso */}
+      {/* Torso with texture */}
       <mesh castShadow receiveShadow position={[0, 1.2, 0]}>
         <boxGeometry args={[0.7, 0.9, 0.35]} />
         <meshStandardMaterial 
-          color={colors.clothes}
+          map={texture}
           roughness={0.9}
           metalness={0.1}
         />
       </mesh>
       
-      {/* Torn shirt details */}
-      <mesh castShadow position={[0.1, 1.2, 0.2]}>
-        <planeGeometry args={[0.3, 0.4]} />
-        <meshStandardMaterial 
-          color={colors.blood}
-          transparent
-          opacity={0.7}
-        />
-      </mesh>
-      
-      {/* Head */}
+      {/* Head with texture */}
       <group ref={headRef} position={[0, 1.8, 0]}>
         <mesh castShadow>
           <sphereGeometry args={[0.25, 12, 10]} />
           <meshStandardMaterial 
-            color={colors.skin}
+            map={texture}
             roughness={0.8}
             metalness={0.05}
           />
         </mesh>
         
-        {/* Decayed face features */}
+        {/* Glowing eyes */}
         <mesh position={[-0.08, 0, 0.22]}>
           <sphereGeometry args={[0.03, 6, 6]} />
-          <meshBasicMaterial color="hsl(0, 0%, 5%)" />
+          <meshStandardMaterial color="hsl(30, 100%, 50%)" emissive="hsl(30, 100%, 40%)" emissiveIntensity={2} />
         </mesh>
         <mesh position={[0.08, 0, 0.22]}>
           <sphereGeometry args={[0.03, 6, 6]} />
-          <meshBasicMaterial color="hsl(0, 0%, 5%)" />
+          <meshStandardMaterial color="hsl(30, 100%, 50%)" emissive="hsl(30, 100%, 40%)" emissiveIntensity={2} />
         </mesh>
         
         {/* Mouth */}
@@ -135,19 +113,13 @@ export function Zombie({ zombie }: ZombieProps) {
           <boxGeometry args={[0.12, 0.05, 0.02]} />
           <meshBasicMaterial color="hsl(0, 0%, 10%)" />
         </mesh>
-        
-        {/* Blood splatter on face */}
-        <mesh position={[0.05, -0.05, 0.24]}>
-          <planeGeometry args={[0.15, 0.2]} />
-          <meshBasicMaterial color={colors.blood} transparent opacity={0.6} />
-        </mesh>
       </group>
       
-      {/* Left Arm */}
+      {/* Left Arm with texture */}
       <group ref={leftArmRef} position={[-0.45, 1.3, 0]}>
         <mesh castShadow>
           <cylinderGeometry args={[0.08, 0.06, 0.7]} />
-          <meshStandardMaterial color={colors.skin} />
+          <meshStandardMaterial map={texture} />
         </mesh>
         
         {/* Claws */}
@@ -157,11 +129,11 @@ export function Zombie({ zombie }: ZombieProps) {
         </mesh>
       </group>
       
-      {/* Right Arm */}
+      {/* Right Arm with texture */}
       <group ref={rightArmRef} position={[0.45, 1.3, 0]}>
         <mesh castShadow>
           <cylinderGeometry args={[0.08, 0.06, 0.7]} />
-          <meshStandardMaterial color={colors.skin} />
+          <meshStandardMaterial map={texture} />
         </mesh>
         
         {/* Claws */}
@@ -169,19 +141,13 @@ export function Zombie({ zombie }: ZombieProps) {
           <coneGeometry args={[0.04, 0.15, 4]} />
           <meshStandardMaterial color="hsl(0, 0%, 20%)" />
         </mesh>
-        
-        {/* Blood on arm */}
-        <mesh position={[0, -0.2, 0.08]}>
-          <planeGeometry args={[0.1, 0.3]} />
-          <meshBasicMaterial color={colors.blood} transparent opacity={0.5} />
-        </mesh>
       </group>
       
-      {/* Left Leg */}
+      {/* Left Leg with texture */}
       <group ref={leftLegRef} position={[-0.18, 0.4, 0]}>
         <mesh castShadow>
           <cylinderGeometry args={[0.11, 0.08, 0.9]} />
-          <meshStandardMaterial color={colors.clothes} />
+          <meshStandardMaterial map={texture} />
         </mesh>
         
         {/* Foot */}
@@ -191,46 +157,40 @@ export function Zombie({ zombie }: ZombieProps) {
         </mesh>
       </group>
       
-      {/* Right Leg */}
+      {/* Right Leg with texture */}
       <group ref={rightLegRef} position={[0.18, 0.4, 0]}>
         <mesh castShadow>
           <cylinderGeometry args={[0.11, 0.08, 0.9]} />
-          <meshStandardMaterial color={colors.clothes} />
+          <meshStandardMaterial map={texture} />
         </mesh>
         
         {/* Foot */}
         <mesh position={[0, -0.45, 0.08]} castShadow>
           <boxGeometry args={[0.15, 0.08, 0.25]} />
           <meshStandardMaterial color="hsl(0, 0%, 25%)" />
-        </mesh>
-        
-        {/* Torn pants detail */}
-        <mesh position={[0, -0.2, 0.1]}>
-          <planeGeometry args={[0.12, 0.2]} />
-          <meshBasicMaterial color={colors.blood} transparent opacity={0.4} />
         </mesh>
       </group>
       
       {/* Special features for tank zombies */}
       {zombie.type === 'tank' && (
         <>
-          {/* Bulky shoulders */}
+          {/* Bulky shoulders with texture */}
           <mesh castShadow position={[-0.5, 1.5, 0]}>
             <sphereGeometry args={[0.2, 8, 6]} />
-            <meshStandardMaterial color={colors.skin} />
+            <meshStandardMaterial map={texture} />
           </mesh>
           <mesh castShadow position={[0.5, 1.5, 0]}>
             <sphereGeometry args={[0.2, 8, 6]} />
-            <meshStandardMaterial color={colors.skin} />
+            <meshStandardMaterial map={texture} />
           </mesh>
           
-          {/* Armor plates */}
+          {/* Armor plates with texture overlay */}
           <mesh castShadow position={[0, 1.2, 0.2]}>
             <boxGeometry args={[0.6, 0.7, 0.1]} />
             <meshStandardMaterial 
-              color="hsl(0, 0%, 30%)" 
-              metalness={0.4} 
-              roughness={0.6}
+              map={texture}
+              metalness={0.3} 
+              roughness={0.7}
             />
           </mesh>
         </>
@@ -239,10 +199,26 @@ export function Zombie({ zombie }: ZombieProps) {
       {/* Special features for runner zombies */}
       {zombie.type === 'runner' && (
         <>
-          {/* Lean body modifier */}
-          <mesh position={[0, 1, 0]} scale={[0.9, 1.1, 0.9]}>
-            <boxGeometry args={[0.01, 0.01, 0.01]} />
-            <meshBasicMaterial transparent opacity={0} />
+          {/* Fire effect on hands */}
+          <mesh position={[-0.45, 0.9, 0]} scale={[0.3, 0.3, 0.3]}>
+            <sphereGeometry args={[1, 8, 6]} />
+            <meshStandardMaterial 
+              color="hsl(20, 100%, 50%)" 
+              transparent 
+              opacity={0.4}
+              emissive="hsl(20, 100%, 40%)"
+              emissiveIntensity={1}
+            />
+          </mesh>
+          <mesh position={[0.45, 0.9, 0]} scale={[0.3, 0.3, 0.3]}>
+            <sphereGeometry args={[1, 8, 6]} />
+            <meshStandardMaterial 
+              color="hsl(20, 100%, 50%)" 
+              transparent 
+              opacity={0.4}
+              emissive="hsl(20, 100%, 40%)"
+              emissiveIntensity={1}
+            />
           </mesh>
         </>
       )}
