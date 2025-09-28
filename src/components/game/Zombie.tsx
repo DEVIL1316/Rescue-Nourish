@@ -22,11 +22,12 @@ export function Zombie({ zombie }: ZombieProps) {
   // Load textures based on zombie type
   const textureMap = {
     normal: zombieNormalTexture,
+    walker: zombieNormalTexture, // Walker uses normal texture
     runner: zombieRunnerTexture,
     tank: zombieTankTexture
   };
   
-  const texture = useLoader(TextureLoader, textureMap[zombie.type]);
+  const texture = useLoader(TextureLoader, textureMap[zombie.type as keyof typeof textureMap]);
   
   useFrame((_, delta) => {
     if (!groupRef.current) return;
