@@ -148,9 +148,9 @@ export function Player() {
       isGrounded.current = true;
     }
     
-    // Clamp to map bounds
-    newPosition.x = Math.max(-45, Math.min(45, newPosition.x));
-    newPosition.z = Math.max(-45, Math.min(45, newPosition.z));
+    // Clamp to map bounds - expanded for larger play area
+    newPosition.x = Math.max(-195, Math.min(195, newPosition.x));
+    newPosition.z = Math.max(-195, Math.min(195, newPosition.z));
     
     movePlayer(newPosition);
     

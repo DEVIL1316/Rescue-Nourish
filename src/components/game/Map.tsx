@@ -18,9 +18,9 @@ export function Map() {
   
   return (
     <>
-      {/* Ground plane at y = 0 */}
+      {/* Ground plane at y = 0 - expanded for larger play area */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
-        <planeGeometry args={[100, 100]} />
+        <planeGeometry args={[400, 400]} />
         <meshStandardMaterial 
           color="hsl(120, 25%, 25%)" 
           roughness={0.95}
@@ -29,7 +29,7 @@ export function Map() {
       </mesh>
       
       {/* Grid helper for better ground visibility */}
-      <gridHelper args={[100, 50, 'hsl(0, 0%, 25%)', 'hsl(0, 0%, 15%)']} position={[0, 0.01, 0]} />
+      <gridHelper args={[400, 100, 'hsl(0, 0%, 25%)', 'hsl(0, 0%, 15%)']} position={[0, 0.01, 0]} />
       
       {/* Safe zone indicator */}
       <mesh 
