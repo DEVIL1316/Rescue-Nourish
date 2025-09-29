@@ -72,9 +72,6 @@ export function Player() {
       if (key === 'shift') {
         keys.current.shift = false;
       }
-      if (key === 'shift') {
-        keys.current.shift = false;
-      }
     };
     
     const handleMouseDown = (e: MouseEvent) => {
@@ -105,9 +102,9 @@ export function Player() {
   useFrame((state, delta) => {
     if (!meshRef.current || gameStatus !== 'playing') return;
     
-    // Speed: normal = 15, sprint = 25
-    const baseSpeed = 15;
-    const sprintMultiplier = 1.7;
+    // Speed: normal = 25, sprint = 45 (increased for better visibility)
+    const baseSpeed = 25;
+    const sprintMultiplier = 1.8;
     const speed = keys.current.shift ? baseSpeed * sprintMultiplier : baseSpeed;
     
     const moveVector = new Vector3(0, 0, 0);
