@@ -78,153 +78,223 @@ export function Zombie({ zombie }: ZombieProps) {
       position={[zombie.position.x, zombie.position.y, zombie.position.z]}
       scale={scale}
     >
-      {/* Main Body with enhanced texture visibility */}
-      <mesh castShadow receiveShadow position={[0, 1.5, 0]}>
-        <boxGeometry args={[1.2, 1.8, 0.6]} />
+      {/* Human-like torso */}
+      <mesh castShadow receiveShadow position={[0, 1.0, 0]}>
+        <boxGeometry args={[0.5, 1.0, 0.3]} />
         <meshStandardMaterial 
-          map={texture}
-          roughness={0.7}
+          color={zombie.type === 'tank' ? "hsl(210, 20%, 30%)" : 
+                 zombie.type === 'runner' ? "hsl(280, 25%, 35%)" : 
+                 "hsl(120, 15%, 35%)"}
+          roughness={0.8}
           metalness={0.1}
-          emissive="hsl(0, 50%, 10%)"
-          emissiveIntensity={0.3}
         />
       </mesh>
       
-      {/* Texture plane for better visibility */}
-      <mesh position={[0, 1.5, 0.31]} receiveShadow>
-        <planeGeometry args={[1.1, 1.7]} />
-        <meshBasicMaterial 
-          map={texture} 
-          transparent 
-          opacity={0.95}
-        />
-      </mesh>
-      
-      {/* Head with enhanced texture and size */}
-      <group ref={headRef} position={[0, 2.4, 0]}>
+      {/* Human head with realistic proportions */}
+      <group ref={headRef} position={[0, 1.75, 0]}>
         <mesh castShadow receiveShadow>
-          <sphereGeometry args={[0.4, 16, 16]} />
+          <sphereGeometry args={[0.15, 16, 16]} />
           <meshStandardMaterial 
-            map={texture}
-            roughness={0.6}
+            color="hsl(25, 45%, 65%)"
+            roughness={0.9}
             metalness={0.05}
-            emissive="hsl(0, 30%, 5%)"
-            emissiveIntensity={0.2}
           />
         </mesh>
         
-        {/* Face texture overlay for detail */}
-        <mesh position={[0, 0, 0.35]}>
-          <planeGeometry args={[0.6, 0.6]} />
-          <meshBasicMaterial 
-            map={texture} 
-            transparent 
-            opacity={0.9}
-          />
+        {/* Eyes */}
+        <mesh position={[-0.05, 0.02, 0.13]}>
+          <sphereGeometry args={[0.025, 8, 8]} />
+          <meshBasicMaterial color="hsl(0, 60%, 40%)" />
+        </mesh>
+        <mesh position={[0.05, 0.02, 0.13]}>
+          <sphereGeometry args={[0.025, 8, 8]} />
+          <meshBasicMaterial color="hsl(0, 60%, 40%)" />
         </mesh>
         
-        {/* Glowing eyes for visibility */}
-        <mesh position={[-0.12, 0.05, 0.38]}>
-          <sphereGeometry args={[0.05, 8, 8]} />
-          <meshStandardMaterial 
-            color="hsl(30, 100%, 60%)" 
-            emissive="hsl(30, 100%, 50%)" 
-            emissiveIntensity={3}
-          />
-        </mesh>
-        <mesh position={[0.12, 0.05, 0.38]}>
-          <sphereGeometry args={[0.05, 8, 8]} />
-          <meshStandardMaterial 
-            color="hsl(30, 100%, 60%)" 
-            emissive="hsl(30, 100%, 50%)" 
-            emissiveIntensity={3}
-          />
+        {/* Nose */}
+        <mesh position={[0, -0.01, 0.14]}>
+          <coneGeometry args={[0.02, 0.03, 4]} />
+          <meshStandardMaterial color="hsl(25, 40%, 60%)" />
         </mesh>
         
         {/* Mouth */}
-        <mesh position={[0, -0.08, 0.23]}>
-          <boxGeometry args={[0.12, 0.05, 0.02]} />
-          <meshBasicMaterial color="hsl(0, 0%, 10%)" />
+        <mesh position={[0, -0.05, 0.13]}>
+          <boxGeometry args={[0.06, 0.015, 0.01]} />
+          <meshBasicMaterial color="hsl(0, 40%, 35%)" />
+        </mesh>
+        
+        {/* Hair */}
+        <mesh position={[0, 0.1, 0]}>
+          <sphereGeometry args={[0.16, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2.2]} />
+          <meshStandardMaterial color="hsl(30, 20%, 25%)" roughness={1} />
         </mesh>
       </group>
       
-      {/* Arms with better texture visibility */}
-      <group ref={leftArmRef} position={[-0.7, 1.8, 0]}>
-        <mesh castShadow receiveShadow>
-          <cylinderGeometry args={[0.15, 0.12, 1.2]} />
+      {/* Left Arm - Human anatomy */}
+      <group ref={leftArmRef} position={[-0.32, 1.35, 0]}>
+        {/* Shoulder */}
+        <mesh castShadow position={[0, 0, 0]}>
+          <sphereGeometry args={[0.08, 8, 8]} />
+          <meshStandardMaterial color="hsl(25, 40%, 60%)" />
+        </mesh>
+        
+        {/* Upper arm */}
+        <mesh castShadow receiveShadow position={[0, -0.2, 0]} rotation={[0, 0, 0.15]}>
+          <cylinderGeometry args={[0.06, 0.05, 0.4]} />
           <meshStandardMaterial 
-            map={texture}
-            roughness={0.7}
+            color="hsl(25, 40%, 60%)"
+            roughness={0.9}
             metalness={0.05}
           />
         </mesh>
         
-        {/* Enhanced claws */}
-        <mesh position={[0, -0.7, 0.1]} rotation={[0.3, 0, 0]}>
-          <coneGeometry args={[0.08, 0.25, 6]} />
-          <meshStandardMaterial 
-            color="hsl(0, 0%, 15%)" 
-            roughness={0.3}
-            metalness={0.2}
-          />
+        {/* Elbow */}
+        <mesh castShadow position={[-0.02, -0.4, 0]}>
+          <sphereGeometry args={[0.05, 8, 8]} />
+          <meshStandardMaterial color="hsl(25, 40%, 60%)" />
         </mesh>
-      </group>
-      
-      {/* Right Arm */}
-      <group ref={rightArmRef} position={[0.7, 1.8, 0]}>
-        <mesh castShadow receiveShadow>
-          <cylinderGeometry args={[0.15, 0.12, 1.2]} />
+        
+        {/* Forearm */}
+        <mesh castShadow receiveShadow position={[-0.05, -0.6, 0]} rotation={[0, 0, 0.1]}>
+          <cylinderGeometry args={[0.045, 0.04, 0.35]} />
           <meshStandardMaterial 
-            map={texture}
-            roughness={0.7}
+            color="hsl(25, 40%, 60%)"
+            roughness={0.9}
             metalness={0.05}
           />
         </mesh>
         
-        {/* Enhanced claws */}
-        <mesh position={[0, -0.7, 0.1]} rotation={[0.3, 0, 0]}>
-          <coneGeometry args={[0.08, 0.25, 6]} />
-          <meshStandardMaterial 
-            color="hsl(0, 0%, 15%)" 
-            roughness={0.3}
-            metalness={0.2}
-          />
+        {/* Hand */}
+        <mesh position={[-0.08, -0.8, 0]} castShadow>
+          <boxGeometry args={[0.08, 0.1, 0.03]} />
+          <meshStandardMaterial color="hsl(25, 40%, 60%)" />
         </mesh>
       </group>
       
-      {/* Legs with enhanced visibility */}
-      <group ref={leftLegRef} position={[-0.3, 0.6, 0]}>
-        <mesh castShadow receiveShadow>
-          <cylinderGeometry args={[0.18, 0.14, 1.4]} />
+      {/* Right Arm - Human anatomy */}
+      <group ref={rightArmRef} position={[0.32, 1.35, 0]}>
+        {/* Shoulder */}
+        <mesh castShadow position={[0, 0, 0]}>
+          <sphereGeometry args={[0.08, 8, 8]} />
+          <meshStandardMaterial color="hsl(25, 40%, 60%)" />
+        </mesh>
+        
+        {/* Upper arm */}
+        <mesh castShadow receiveShadow position={[0, -0.2, 0]} rotation={[0, 0, -0.15]}>
+          <cylinderGeometry args={[0.06, 0.05, 0.4]} />
           <meshStandardMaterial 
-            map={texture}
-            roughness={0.8}
+            color="hsl(25, 40%, 60%)"
+            roughness={0.9}
+            metalness={0.05}
+          />
+        </mesh>
+        
+        {/* Elbow */}
+        <mesh castShadow position={[0.02, -0.4, 0]}>
+          <sphereGeometry args={[0.05, 8, 8]} />
+          <meshStandardMaterial color="hsl(25, 40%, 60%)" />
+        </mesh>
+        
+        {/* Forearm */}
+        <mesh castShadow receiveShadow position={[0.05, -0.6, 0]} rotation={[0, 0, -0.1]}>
+          <cylinderGeometry args={[0.045, 0.04, 0.35]} />
+          <meshStandardMaterial 
+            color="hsl(25, 40%, 60%)"
+            roughness={0.9}
+            metalness={0.05}
+          />
+        </mesh>
+        
+        {/* Hand */}
+        <mesh position={[0.08, -0.8, 0]} castShadow>
+          <boxGeometry args={[0.08, 0.1, 0.03]} />
+          <meshStandardMaterial color="hsl(25, 40%, 60%)" />
+        </mesh>
+      </group>
+      
+      {/* Left Leg - Human anatomy */}
+      <group ref={leftLegRef} position={[-0.15, 0.25, 0]}>
+        {/* Hip joint */}
+        <mesh castShadow position={[0, 0, 0]}>
+          <sphereGeometry args={[0.07, 8, 8]} />
+          <meshStandardMaterial color="hsl(210, 15%, 35%)" />
+        </mesh>
+        
+        {/* Thigh */}
+        <mesh castShadow receiveShadow position={[0, -0.25, 0]}>
+          <cylinderGeometry args={[0.08, 0.06, 0.5]} />
+          <meshStandardMaterial 
+            color={zombie.type === 'tank' ? "hsl(210, 15%, 35%)" :
+                   zombie.type === 'runner' ? "hsl(280, 20%, 40%)" :
+                   "hsl(120, 10%, 40%)"}
+            roughness={0.9}
+            metalness={0.05}
+          />
+        </mesh>
+        
+        {/* Knee */}
+        <mesh castShadow position={[0, -0.5, 0]}>
+          <sphereGeometry args={[0.06, 8, 8]} />
+          <meshStandardMaterial color="hsl(25, 30%, 50%)" />
+        </mesh>
+        
+        {/* Shin */}
+        <mesh castShadow receiveShadow position={[0, -0.75, 0]}>
+          <cylinderGeometry args={[0.055, 0.045, 0.5]} />
+          <meshStandardMaterial 
+            color="hsl(25, 35%, 55%)"
+            roughness={0.9}
             metalness={0.05}
           />
         </mesh>
         
         {/* Foot */}
-        <mesh position={[0, -0.7, 0.15]} castShadow>
-          <boxGeometry args={[0.25, 0.12, 0.4]} />
-          <meshStandardMaterial color="hsl(0, 0%, 20%)" />
+        <mesh position={[0, -1.0, 0.08]} castShadow>
+          <boxGeometry args={[0.09, 0.05, 0.2]} />
+          <meshStandardMaterial color="hsl(0, 0%, 25%)" />
         </mesh>
       </group>
       
-      {/* Right Leg */}
-      <group ref={rightLegRef} position={[0.3, 0.6, 0]}>
-        <mesh castShadow receiveShadow>
-          <cylinderGeometry args={[0.18, 0.14, 1.4]} />
+      {/* Right Leg - Human anatomy */}
+      <group ref={rightLegRef} position={[0.15, 0.25, 0]}>
+        {/* Hip joint */}
+        <mesh castShadow position={[0, 0, 0]}>
+          <sphereGeometry args={[0.07, 8, 8]} />
+          <meshStandardMaterial color="hsl(210, 15%, 35%)" />
+        </mesh>
+        
+        {/* Thigh */}
+        <mesh castShadow receiveShadow position={[0, -0.25, 0]}>
+          <cylinderGeometry args={[0.08, 0.06, 0.5]} />
           <meshStandardMaterial 
-            map={texture}
-            roughness={0.8}
+            color={zombie.type === 'tank' ? "hsl(210, 15%, 35%)" :
+                   zombie.type === 'runner' ? "hsl(280, 20%, 40%)" :
+                   "hsl(120, 10%, 40%)"}
+            roughness={0.9}
+            metalness={0.05}
+          />
+        </mesh>
+        
+        {/* Knee */}
+        <mesh castShadow position={[0, -0.5, 0]}>
+          <sphereGeometry args={[0.06, 8, 8]} />
+          <meshStandardMaterial color="hsl(25, 30%, 50%)" />
+        </mesh>
+        
+        {/* Shin */}
+        <mesh castShadow receiveShadow position={[0, -0.75, 0]}>
+          <cylinderGeometry args={[0.055, 0.045, 0.5]} />
+          <meshStandardMaterial 
+            color="hsl(25, 35%, 55%)"
+            roughness={0.9}
             metalness={0.05}
           />
         </mesh>
         
         {/* Foot */}
-        <mesh position={[0, -0.7, 0.15]} castShadow>
-          <boxGeometry args={[0.25, 0.12, 0.4]} />
-          <meshStandardMaterial color="hsl(0, 0%, 20%)" />
+        <mesh position={[0, -1.0, 0.08]} castShadow>
+          <boxGeometry args={[0.09, 0.05, 0.2]} />
+          <meshStandardMaterial color="hsl(0, 0%, 25%)" />
         </mesh>
       </group>
       
