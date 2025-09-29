@@ -62,11 +62,11 @@ export function Zombie({ zombie }: ZombieProps) {
   const getZombieScale = (): [number, number, number] => {
     switch (zombie.type) {
       case 'tank':
-        return [1.8, 1.8, 1.8]; // Normal-sized tank zombies
+        return [3.0, 3.0, 3.0]; // Extra large tank zombies
       case 'runner':
-        return [1.4, 1.4, 1.4]; // Normal-sized runner zombies
+        return [2.5, 2.5, 2.5]; // Large runner zombies
       default:
-        return [1.6, 1.6, 1.6]; // Normal-sized walker zombies
+        return [2.8, 2.8, 2.8]; // Large walker zombies
     }
   };
   
