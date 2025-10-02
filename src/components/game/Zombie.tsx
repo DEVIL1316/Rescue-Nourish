@@ -11,13 +11,9 @@ interface ZombieProps {
 }
 
 export function Zombie({ zombie }: ZombieProps) {
+  const meshRef = useRef<Mesh>(null);
   const groupRef = useRef<Group>(null);
   const animationTime = useRef(Math.random() * Math.PI * 2);
-  const leftLegRef = useRef<Group>(null);
-  const rightLegRef = useRef<Group>(null);
-  const leftArmRef = useRef<Group>(null);
-  const rightArmRef = useRef<Group>(null);
-  const headRef = useRef<Group>(null);
   
   // Load textures based on zombie type
   const textureMap = {
@@ -30,43 +26,37 @@ export function Zombie({ zombie }: ZombieProps) {
   const texture = useLoader(TextureLoader, textureMap[zombie.type as keyof typeof textureMap]);
   
   useFrame((_, delta) => {
-    if (!groupRef.current) return;
+    if (!meshRef.current || !groupRef.current) return;
     
     animationTime.current += delta * (zombie.type === 'runner' ? 3 : 2);
     
     // Walking animation
-    if (leftLegRef.current && rightLegRef.current) {
-      leftLegRef.current.rotation.x = Math.sin(animationTime.current) * 0.5;
-      rightLegRef.current.rotation.x = -Math.sin(animationTime.current) * 0.5;
-    }
-    
-    if (leftArmRef.current && rightArmRef.current) {
-      leftArmRef.current.rotation.x = -Math.sin(animationTime.current) * 0.3;
-      rightArmRef.current.rotation.x = Math.sin(animationTime.current) * 0.3;
-      
-      // Zombie reaching animation
-      leftArmRef.current.rotation.z = -0.5 - Math.sin(animationTime.current * 0.5) * 0.2;
-      rightArmRef.current.rotation.z = 0.5 + Math.sin(animationTime.current * 0.5 + Math.PI) * 0.2;
-    }
-    
-    if (headRef.current) {
-      headRef.current.rotation.z = Math.sin(animationTime.current * 0.5) * 0.1;
-      headRef.current.rotation.y = Math.sin(animationTime.current * 0.3) * 0.2;
-    }
+    meshRef.current.rotation.x = Math.sin(animationTime.current) * 0.1;
+    meshRef.current.rotation.z = Math.sin(animationTime.current * 0.5) * 0.05;
     
     // Body sway
-    groupRef.current.rotation.z = Math.sin(animationTime.current * 0.5) * 0.05;
     groupRef.current.position.y = Math.abs(Math.sin(animationTime.current * 2)) * 0.1;
   });
   
   const getZombieScale = (): [number, number, number] => {
     switch (zombie.type) {
       case 'tank':
-        return [3.0, 3.0, 3.0]; // Extra large tank zombies
+        return [1.5, 2.0, 1.5];
       case 'runner':
-        return [2.5, 2.5, 2.5]; // Large runner zombies
+        return [0.8, 0.8, 0.8];
       default:
-        return [2.8, 2.8, 2.8]; // Large walker zombies
+        return [1, 1, 1];
+    }
+  };
+  
+  const getZombieColor = () => {
+    switch (zombie.type) {
+      case 'tank':
+        return "hsl(120, 40%, 30%)";
+      case 'runner':
+        return "hsl(0, 60%, 40%)";
+      default:
+        return "hsl(90, 30%, 40%)";
     }
   };
   
@@ -78,257 +68,77 @@ export function Zombie({ zombie }: ZombieProps) {
       position={[zombie.position.x, zombie.position.y, zombie.position.z]}
       scale={scale}
     >
-      {/* Human-like torso */}
-      <mesh castShadow receiveShadow position={[0, 1.0, 0]}>
-        <boxGeometry args={[0.5, 1.0, 0.3]} />
+      {/* Main body with texture */}
+      <mesh ref={meshRef} castShadow receiveShadow>
+        <boxGeometry args={[1, 1.5, 0.5]} />
         <meshStandardMaterial 
-          color={zombie.type === 'tank' ? "hsl(210, 20%, 30%)" : 
-                 zombie.type === 'runner' ? "hsl(280, 25%, 35%)" : 
-                 "hsl(120, 15%, 35%)"}
+          map={texture}
+          color={getZombieColor()}
           roughness={0.8}
           metalness={0.1}
         />
       </mesh>
       
-      {/* Human head with realistic proportions */}
-      <group ref={headRef} position={[0, 1.75, 0]}>
-        <mesh castShadow receiveShadow>
-          <sphereGeometry args={[0.15, 16, 16]} />
-          <meshStandardMaterial 
-            color="hsl(25, 45%, 65%)"
-            roughness={0.9}
-            metalness={0.05}
-          />
-        </mesh>
-        
-        {/* Eyes */}
-        <mesh position={[-0.05, 0.02, 0.13]}>
-          <sphereGeometry args={[0.025, 8, 8]} />
-          <meshBasicMaterial color="hsl(0, 60%, 40%)" />
-        </mesh>
-        <mesh position={[0.05, 0.02, 0.13]}>
-          <sphereGeometry args={[0.025, 8, 8]} />
-          <meshBasicMaterial color="hsl(0, 60%, 40%)" />
-        </mesh>
-        
-        {/* Nose */}
-        <mesh position={[0, -0.01, 0.14]}>
-          <coneGeometry args={[0.02, 0.03, 4]} />
-          <meshStandardMaterial color="hsl(25, 40%, 60%)" />
-        </mesh>
-        
-        {/* Mouth */}
-        <mesh position={[0, -0.05, 0.13]}>
-          <boxGeometry args={[0.06, 0.015, 0.01]} />
-          <meshBasicMaterial color="hsl(0, 40%, 35%)" />
-        </mesh>
-        
-        {/* Hair */}
-        <mesh position={[0, 0.1, 0]}>
-          <sphereGeometry args={[0.16, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2.2]} />
-          <meshStandardMaterial color="hsl(30, 20%, 25%)" roughness={1} />
-        </mesh>
-      </group>
+      {/* Head */}
+      <mesh castShadow receiveShadow position={[0, 1, 0]}>
+        <sphereGeometry args={[0.3, 16, 16]} />
+        <meshStandardMaterial 
+          color={getZombieColor()}
+          roughness={0.7}
+          metalness={0.05}
+        />
+      </mesh>
       
-      {/* Left Arm - Human anatomy */}
-      <group ref={leftArmRef} position={[-0.32, 1.35, 0]}>
-        {/* Shoulder */}
-        <mesh castShadow position={[0, 0, 0]}>
-          <sphereGeometry args={[0.08, 8, 8]} />
-          <meshStandardMaterial color="hsl(25, 40%, 60%)" />
-        </mesh>
-        
-        {/* Upper arm */}
-        <mesh castShadow receiveShadow position={[0, -0.2, 0]} rotation={[0, 0, 0.15]}>
-          <cylinderGeometry args={[0.06, 0.05, 0.4]} />
-          <meshStandardMaterial 
-            color="hsl(25, 40%, 60%)"
-            roughness={0.9}
-            metalness={0.05}
-          />
-        </mesh>
-        
-        {/* Elbow */}
-        <mesh castShadow position={[-0.02, -0.4, 0]}>
-          <sphereGeometry args={[0.05, 8, 8]} />
-          <meshStandardMaterial color="hsl(25, 40%, 60%)" />
-        </mesh>
-        
-        {/* Forearm */}
-        <mesh castShadow receiveShadow position={[-0.05, -0.6, 0]} rotation={[0, 0, 0.1]}>
-          <cylinderGeometry args={[0.045, 0.04, 0.35]} />
-          <meshStandardMaterial 
-            color="hsl(25, 40%, 60%)"
-            roughness={0.9}
-            metalness={0.05}
-          />
-        </mesh>
-        
-        {/* Hand */}
-        <mesh position={[-0.08, -0.8, 0]} castShadow>
-          <boxGeometry args={[0.08, 0.1, 0.03]} />
-          <meshStandardMaterial color="hsl(25, 40%, 60%)" />
-        </mesh>
-      </group>
+      {/* Eyes - glowing effect */}
+      <mesh position={[-0.1, 1.05, 0.25]}>
+        <sphereGeometry args={[0.05, 8, 8]} />
+        <meshBasicMaterial color={zombie.type === 'runner' ? "orange" : "red"} />
+      </mesh>
+      <mesh position={[0.1, 1.05, 0.25]}>
+        <sphereGeometry args={[0.05, 8, 8]} />
+        <meshBasicMaterial color={zombie.type === 'runner' ? "orange" : "red"} />
+      </mesh>
       
-      {/* Right Arm - Human anatomy */}
-      <group ref={rightArmRef} position={[0.32, 1.35, 0]}>
-        {/* Shoulder */}
-        <mesh castShadow position={[0, 0, 0]}>
-          <sphereGeometry args={[0.08, 8, 8]} />
-          <meshStandardMaterial color="hsl(25, 40%, 60%)" />
-        </mesh>
-        
-        {/* Upper arm */}
-        <mesh castShadow receiveShadow position={[0, -0.2, 0]} rotation={[0, 0, -0.15]}>
-          <cylinderGeometry args={[0.06, 0.05, 0.4]} />
-          <meshStandardMaterial 
-            color="hsl(25, 40%, 60%)"
-            roughness={0.9}
-            metalness={0.05}
-          />
-        </mesh>
-        
-        {/* Elbow */}
-        <mesh castShadow position={[0.02, -0.4, 0]}>
-          <sphereGeometry args={[0.05, 8, 8]} />
-          <meshStandardMaterial color="hsl(25, 40%, 60%)" />
-        </mesh>
-        
-        {/* Forearm */}
-        <mesh castShadow receiveShadow position={[0.05, -0.6, 0]} rotation={[0, 0, -0.1]}>
-          <cylinderGeometry args={[0.045, 0.04, 0.35]} />
-          <meshStandardMaterial 
-            color="hsl(25, 40%, 60%)"
-            roughness={0.9}
-            metalness={0.05}
-          />
-        </mesh>
-        
-        {/* Hand */}
-        <mesh position={[0.08, -0.8, 0]} castShadow>
-          <boxGeometry args={[0.08, 0.1, 0.03]} />
-          <meshStandardMaterial color="hsl(25, 40%, 60%)" />
-        </mesh>
-      </group>
+      {/* Arms */}
+      <mesh castShadow position={[-0.7, 0.2, 0]} rotation={[0, 0, 0.5]}>
+        <cylinderGeometry args={[0.1, 0.1, 1]} />
+        <meshStandardMaterial color={getZombieColor()} />
+      </mesh>
+      <mesh castShadow position={[0.7, 0.2, 0]} rotation={[0, 0, -0.5]}>
+        <cylinderGeometry args={[0.1, 0.1, 1]} />
+        <meshStandardMaterial color={getZombieColor()} />
+      </mesh>
       
-      {/* Left Leg - Human anatomy */}
-      <group ref={leftLegRef} position={[-0.15, 0.25, 0]}>
-        {/* Hip joint */}
-        <mesh castShadow position={[0, 0, 0]}>
-          <sphereGeometry args={[0.07, 8, 8]} />
-          <meshStandardMaterial color="hsl(210, 15%, 35%)" />
-        </mesh>
-        
-        {/* Thigh */}
-        <mesh castShadow receiveShadow position={[0, -0.25, 0]}>
-          <cylinderGeometry args={[0.08, 0.06, 0.5]} />
-          <meshStandardMaterial 
-            color={zombie.type === 'tank' ? "hsl(210, 15%, 35%)" :
-                   zombie.type === 'runner' ? "hsl(280, 20%, 40%)" :
-                   "hsl(120, 10%, 40%)"}
-            roughness={0.9}
-            metalness={0.05}
-          />
-        </mesh>
-        
-        {/* Knee */}
-        <mesh castShadow position={[0, -0.5, 0]}>
-          <sphereGeometry args={[0.06, 8, 8]} />
-          <meshStandardMaterial color="hsl(25, 30%, 50%)" />
-        </mesh>
-        
-        {/* Shin */}
-        <mesh castShadow receiveShadow position={[0, -0.75, 0]}>
-          <cylinderGeometry args={[0.055, 0.045, 0.5]} />
-          <meshStandardMaterial 
-            color="hsl(25, 35%, 55%)"
-            roughness={0.9}
-            metalness={0.05}
-          />
-        </mesh>
-        
-        {/* Foot */}
-        <mesh position={[0, -1.0, 0.08]} castShadow>
-          <boxGeometry args={[0.09, 0.05, 0.2]} />
-          <meshStandardMaterial color="hsl(0, 0%, 25%)" />
-        </mesh>
-      </group>
-      
-      {/* Right Leg - Human anatomy */}
-      <group ref={rightLegRef} position={[0.15, 0.25, 0]}>
-        {/* Hip joint */}
-        <mesh castShadow position={[0, 0, 0]}>
-          <sphereGeometry args={[0.07, 8, 8]} />
-          <meshStandardMaterial color="hsl(210, 15%, 35%)" />
-        </mesh>
-        
-        {/* Thigh */}
-        <mesh castShadow receiveShadow position={[0, -0.25, 0]}>
-          <cylinderGeometry args={[0.08, 0.06, 0.5]} />
-          <meshStandardMaterial 
-            color={zombie.type === 'tank' ? "hsl(210, 15%, 35%)" :
-                   zombie.type === 'runner' ? "hsl(280, 20%, 40%)" :
-                   "hsl(120, 10%, 40%)"}
-            roughness={0.9}
-            metalness={0.05}
-          />
-        </mesh>
-        
-        {/* Knee */}
-        <mesh castShadow position={[0, -0.5, 0]}>
-          <sphereGeometry args={[0.06, 8, 8]} />
-          <meshStandardMaterial color="hsl(25, 30%, 50%)" />
-        </mesh>
-        
-        {/* Shin */}
-        <mesh castShadow receiveShadow position={[0, -0.75, 0]}>
-          <cylinderGeometry args={[0.055, 0.045, 0.5]} />
-          <meshStandardMaterial 
-            color="hsl(25, 35%, 55%)"
-            roughness={0.9}
-            metalness={0.05}
-          />
-        </mesh>
-        
-        {/* Foot */}
-        <mesh position={[0, -1.0, 0.08]} castShadow>
-          <boxGeometry args={[0.09, 0.05, 0.2]} />
-          <meshStandardMaterial color="hsl(0, 0%, 25%)" />
-        </mesh>
-      </group>
+      {/* Legs */}
+      <mesh castShadow position={[-0.3, -1, 0]}>
+        <cylinderGeometry args={[0.15, 0.1, 1]} />
+        <meshStandardMaterial color={getZombieColor()} />
+      </mesh>
+      <mesh castShadow position={[0.3, -1, 0]}>
+        <cylinderGeometry args={[0.15, 0.1, 1]} />
+        <meshStandardMaterial color={getZombieColor()} />
+      </mesh>
       
       {/* Special features for tank zombies */}
       {zombie.type === 'tank' && (
         <>
-          {/* Bulky shoulders with texture */}
-          <mesh castShadow position={[-0.9, 2.2, 0]}>
-            <sphereGeometry args={[0.35, 12, 10]} />
+          {/* Armor plates */}
+          <mesh castShadow position={[0, 0, 0.4]}>
+            <boxGeometry args={[1.2, 1.5, 0.1]} />
             <meshStandardMaterial 
-              map={texture}
-              roughness={0.6}
-              metalness={0.1}
+              color="darkgray" 
+              metalness={0.8} 
+              roughness={0.2}
             />
           </mesh>
-          <mesh castShadow position={[0.9, 2.2, 0]}>
-            <sphereGeometry args={[0.35, 12, 10]} />
-            <meshStandardMaterial 
-              map={texture}
-              roughness={0.6}
-              metalness={0.1}
-            />
+          {/* Shoulder spikes */}
+          <mesh castShadow position={[-0.8, 0.7, 0]} rotation={[0, 0, -0.8]}>
+            <coneGeometry args={[0.15, 0.5, 4]} />
+            <meshStandardMaterial color="silver" metalness={0.9} />
           </mesh>
-          
-          {/* Armor plates with texture overlay */}
-          <mesh castShadow position={[0, 1.8, 0.4]}>
-            <boxGeometry args={[1.0, 1.2, 0.15]} />
-            <meshStandardMaterial 
-              map={texture}
-              metalness={0.4} 
-              roughness={0.6}
-              emissive="hsl(0, 0%, 5%)"
-              emissiveIntensity={0.2}
-            />
+          <mesh castShadow position={[0.8, 0.7, 0]} rotation={[0, 0, 0.8]}>
+            <coneGeometry args={[0.15, 0.5, 4]} />
+            <meshStandardMaterial color="silver" metalness={0.9} />
           </mesh>
         </>
       )}
@@ -336,49 +146,44 @@ export function Zombie({ zombie }: ZombieProps) {
       {/* Special features for runner zombies */}
       {zombie.type === 'runner' && (
         <>
-          {/* Fire effect on hands - enhanced */}
-          <mesh position={[-0.7, 1.3, 0]} scale={[0.5, 0.5, 0.5]}>
-            <sphereGeometry args={[1, 10, 8]} />
-            <meshStandardMaterial 
-              color="hsl(20, 100%, 50%)" 
-              transparent 
-              opacity={0.5}
-              emissive="hsl(20, 100%, 40%)"
-              emissiveIntensity={2}
-            />
-          </mesh>
-          <mesh position={[0.7, 1.3, 0]} scale={[0.5, 0.5, 0.5]}>
-            <sphereGeometry args={[1, 10, 8]} />
-            <meshStandardMaterial 
-              color="hsl(20, 100%, 50%)" 
-              transparent 
-              opacity={0.5}
-              emissive="hsl(20, 100%, 40%)"
-              emissiveIntensity={2}
-            />
-          </mesh>
-          
           {/* Speed trails */}
-          <mesh position={[0, 1.5, -0.5]} rotation={[0, 0, 0]}>
-            <planeGeometry args={[0.3, 2]} />
+          <mesh position={[0, 0, -0.3]} rotation={[0, 0, 0]}>
+            <planeGeometry args={[0.3, 1.5]} />
             <meshBasicMaterial 
-              color="hsl(0, 100%, 50%)" 
+              color="red" 
               transparent 
               opacity={0.3}
+            />
+          </mesh>
+          {/* Fire effect on hands */}
+          <mesh position={[-0.7, 0.2, 0]} scale={[0.2, 0.2, 0.2]}>
+            <sphereGeometry args={[1, 8, 8]} />
+            <meshBasicMaterial 
+              color="orange" 
+              transparent 
+              opacity={0.6}
+            />
+          </mesh>
+          <mesh position={[0.7, 0.2, 0]} scale={[0.2, 0.2, 0.2]}>
+            <sphereGeometry args={[1, 8, 8]} />
+            <meshBasicMaterial 
+              color="orange" 
+              transparent 
+              opacity={0.6}
             />
           </mesh>
         </>
       )}
       
-      {/* Health bar - larger and more visible */}
-      <mesh position={[0, 3.5, 0]} rotation={[0, 0, 0]}>
-        <planeGeometry args={[2.0, 0.25]} />
-        <meshBasicMaterial color="hsl(0, 0%, 10%)" transparent opacity={0.9} />
+      {/* Health bar */}
+      <mesh position={[0, 2, 0]} rotation={[0, 0, 0]}>
+        <planeGeometry args={[1, 0.1]} />
+        <meshBasicMaterial color="black" transparent opacity={0.8} />
       </mesh>
-      <mesh position={[-1.0 + (zombie.health / 100) * 1.0, 3.5, 0.01]}>
-        <planeGeometry args={[(zombie.health / 100) * 2.0, 0.2]} />
+      <mesh position={[-0.5 + (zombie.health / 100) * 0.5, 2, 0.01]}>
+        <planeGeometry args={[(zombie.health / 100) * 1, 0.08]} />
         <meshBasicMaterial 
-          color={zombie.health > 50 ? 'hsl(120, 60%, 40%)' : zombie.health > 25 ? 'hsl(38, 92%, 50%)' : 'hsl(0, 72%, 45%)'} 
+          color={zombie.health > 50 ? 'green' : zombie.health > 25 ? 'yellow' : 'red'} 
         />
       </mesh>
     </group>
