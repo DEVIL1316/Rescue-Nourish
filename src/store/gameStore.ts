@@ -4,7 +4,7 @@ export interface Zombie {
   id: string;
   position: { x: number; y: number; z: number };
   health: number;
-  type: 'walker' | 'runner' | 'tank';
+  type: 'walker' | 'runner' | 'tank' | 'dog' | 'bear' | 'wolf';
   speed: number;
   damage: number;
   target: { x: number; y: number; z: number } | null;

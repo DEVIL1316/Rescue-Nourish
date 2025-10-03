@@ -7,6 +7,7 @@ import { Map } from './Map';
 import { Lighting } from './Lighting';
 import { Buildings } from './Buildings';
 import { Trees } from './Trees';
+import { BurningCars } from './BurningCars';
 import { useGameStore } from '@/store/gameStore';
 
 export function GameScene() {
@@ -42,6 +43,7 @@ export function GameScene() {
           <Map />
           <Buildings />
           <Trees />
+          <BurningCars />
           <Player />
           <ZombieManager />
           

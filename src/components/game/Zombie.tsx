@@ -43,148 +43,306 @@ export function Zombie({ zombie }: ZombieProps) {
   const getZombieScale = (): [number, number, number] => {
     switch (zombie.type) {
       case 'tank':
-        return [1.8, 1.8, 1.8]; // Larger for tank
+        return [2.2, 2.2, 2.2]; // Larger for tank
+      case 'bear':
+        return [2.5, 2.0, 2.5]; // Large and wide
       case 'runner':
-        return [1.2, 1.2, 1.2]; // Smaller, agile
+        return [1.4, 1.4, 1.4]; // Smaller, agile
+      case 'dog':
+        return [1.0, 0.8, 1.2]; // Low and long
+      case 'wolf':
+        return [1.3, 1.0, 1.5]; // Medium predator
       default:
-        return [1.5, 1.5, 1.5]; // Normal size
+        return [1.6, 1.6, 1.6]; // Normal size
     }
   };
   
   const scale = getZombieScale();
+  const isAnimal = zombie.type === 'dog' || zombie.type === 'bear' || zombie.type === 'wolf';
   
   return (
     <group 
       ref={groupRef}
-      position={[zombie.position.x, zombie.position.y + 1.5, zombie.position.z]}
+      position={[zombie.position.x, zombie.position.y + (isAnimal ? 0.5 : 1.5), zombie.position.z]}
       scale={scale}
     >
       <group ref={bodyRef}>
-        {/* Main Body - Torso */}
-        <mesh castShadow receiveShadow position={[0, 0, 0]}>
-          <boxGeometry args={[0.8, 1.2, 0.4]} />
-          <meshStandardMaterial 
-            map={texture}
-            roughness={0.9}
-            metalness={0.1}
-            color={zombie.type === 'tank' ? '#666666' : zombie.type === 'runner' ? '#884444' : '#666655'}
-          />
-        </mesh>
-        
-        {/* Head with horror texture */}
-        <mesh castShadow receiveShadow position={[0, 0.9, 0]}>
-          <sphereGeometry args={[0.35, 16, 16]} />
-          <meshStandardMaterial 
-            map={texture}
-            roughness={0.8}
-            metalness={0.05}
-            color="#997755"
-          />
-        </mesh>
-        
-        {/* Glowing Eyes */}
-        <mesh position={[-0.12, 0.95, 0.3]}>
-          <sphereGeometry args={[0.04, 8, 8]} />
-          <meshStandardMaterial 
-            emissive={zombie.type === 'runner' ? '#ff6600' : '#ff0000'}
-            emissiveIntensity={2}
-            color="#ffffff"
-          />
-        </mesh>
-        <mesh position={[0.12, 0.95, 0.3]}>
-          <sphereGeometry args={[0.04, 8, 8]} />
-          <meshStandardMaterial 
-            emissive={zombie.type === 'runner' ? '#ff6600' : '#ff0000'}
-            emissiveIntensity={2}
-            color="#ffffff"
-          />
-        </mesh>
-        
-        {/* Arms with texture */}
-        <group position={[-0.55, 0.2, 0]} rotation={[0, 0, 0.3]}>
-          <mesh castShadow receiveShadow>
-            <capsuleGeometry args={[0.12, 0.8, 8, 16]} />
-            <meshStandardMaterial 
-              map={texture}
-              roughness={0.9}
-              metalness={0.05}
-              color="#886655"
-            />
-          </mesh>
-          {/* Claw/Hand */}
-          <mesh position={[0, -0.5, 0]} castShadow>
-            <sphereGeometry args={[0.15, 8, 8]} />
-            <meshStandardMaterial 
-              color="#554433"
-              roughness={1}
-              metalness={0}
-            />
-          </mesh>
-        </group>
-        
-        <group position={[0.55, 0.2, 0]} rotation={[0, 0, -0.3]}>
-          <mesh castShadow receiveShadow>
-            <capsuleGeometry args={[0.12, 0.8, 8, 16]} />
-            <meshStandardMaterial 
-              map={texture}
-              roughness={0.9}
-              metalness={0.05}
-              color="#886655"
-            />
-          </mesh>
-          {/* Claw/Hand */}
-          <mesh position={[0, -0.5, 0]} castShadow>
-            <sphereGeometry args={[0.15, 8, 8]} />
-            <meshStandardMaterial 
-              color="#554433"
-              roughness={1}
-              metalness={0}
-            />
-          </mesh>
-        </group>
-        
-        {/* Legs with texture */}
-        <group position={[-0.25, -1, 0]}>
-          <mesh castShadow receiveShadow>
-            <capsuleGeometry args={[0.15, 0.9, 8, 16]} />
-            <meshStandardMaterial 
-              map={texture}
-              roughness={0.9}
-              metalness={0.05}
-              color="#665544"
-            />
-          </mesh>
-          {/* Foot */}
-          <mesh position={[0, -0.6, 0.1]} castShadow>
-            <boxGeometry args={[0.2, 0.1, 0.3]} />
-            <meshStandardMaterial 
-              color="#332222"
-              roughness={1}
-              metalness={0}
-            />
-          </mesh>
-        </group>
-        
-        <group position={[0.25, -1, 0]}>
-          <mesh castShadow receiveShadow>
-            <capsuleGeometry args={[0.15, 0.9, 8, 16]} />
-            <meshStandardMaterial 
-              map={texture}
-              roughness={0.9}
-              metalness={0.05}
-              color="#665544"
-            />
-          </mesh>
-          {/* Foot */}
-          <mesh position={[0, -0.6, 0.1]} castShadow>
-            <boxGeometry args={[0.2, 0.1, 0.3]} />
-            <meshStandardMaterial 
-              color="#332222"
-              roughness={1}
-              metalness={0}
-            />
-          </mesh>
-        </group>
+        {/* Render animal zombies */}
+        {isAnimal ? (
+          <>
+            {/* Animal Body */}
+            <mesh castShadow receiveShadow position={[0, 0, 0]}>
+              <boxGeometry args={zombie.type === 'dog' ? [0.6, 0.5, 1.2] : zombie.type === 'bear' ? [1.2, 0.8, 1.5] : [0.8, 0.6, 1.3]} />
+              <meshStandardMaterial 
+                map={texture}
+                roughness={0.95}
+                metalness={0.05}
+                color={zombie.type === 'bear' ? '#4a3929' : zombie.type === 'wolf' ? '#5a5a5a' : '#6b5544'}
+              />
+            </mesh>
+            
+            {/* Animal Head */}
+            <mesh castShadow receiveShadow position={[0, 0.2, zombie.type === 'dog' ? 0.8 : zombie.type === 'bear' ? 0.9 : 0.85]}>
+              <boxGeometry args={zombie.type === 'dog' ? [0.4, 0.35, 0.5] : zombie.type === 'bear' ? [0.7, 0.6, 0.6] : [0.5, 0.45, 0.55]} />
+              <meshStandardMaterial 
+                map={texture}
+                roughness={0.9}
+                metalness={0.05}
+                color={zombie.type === 'bear' ? '#3a2919' : zombie.type === 'wolf' ? '#4a4a4a' : '#5b4534'}
+              />
+            </mesh>
+            
+            {/* Snout */}
+            <mesh castShadow position={[0, 0.05, zombie.type === 'dog' ? 1.15 : zombie.type === 'bear' ? 1.3 : 1.2]}>
+              <boxGeometry args={zombie.type === 'bear' ? [0.4, 0.3, 0.3] : [0.25, 0.2, 0.25]} />
+              <meshStandardMaterial color="#3a3030" roughness={1} />
+            </mesh>
+            
+            {/* Glowing Eyes */}
+            <mesh position={[-0.15, 0.3, zombie.type === 'dog' ? 1.0 : zombie.type === 'bear' ? 1.15 : 1.05]}>
+              <sphereGeometry args={[0.06, 8, 8]} />
+              <meshStandardMaterial 
+                emissive="#ff0000"
+                emissiveIntensity={3}
+                color="#ffffff"
+              />
+            </mesh>
+            <mesh position={[0.15, 0.3, zombie.type === 'dog' ? 1.0 : zombie.type === 'bear' ? 1.15 : 1.05]}>
+              <sphereGeometry args={[0.06, 8, 8]} />
+              <meshStandardMaterial 
+                emissive="#ff0000"
+                emissiveIntensity={3}
+                color="#ffffff"
+              />
+            </mesh>
+            
+            {/* Front Legs */}
+            <mesh castShadow position={[-0.25, -0.5, 0.4]} rotation={[0.1, 0, 0]}>
+              <cylinderGeometry args={[0.12, 0.1, 0.8]} />
+              <meshStandardMaterial map={texture} color="#5a4a3a" roughness={0.9} />
+            </mesh>
+            <mesh castShadow position={[0.25, -0.5, 0.4]} rotation={[0.1, 0, 0]}>
+              <cylinderGeometry args={[0.12, 0.1, 0.8]} />
+              <meshStandardMaterial map={texture} color="#5a4a3a" roughness={0.9} />
+            </mesh>
+            
+            {/* Back Legs */}
+            <mesh castShadow position={[-0.25, -0.5, -0.4]} rotation={[-0.1, 0, 0]}>
+              <cylinderGeometry args={[0.12, 0.1, 0.8]} />
+              <meshStandardMaterial map={texture} color="#5a4a3a" roughness={0.9} />
+            </mesh>
+            <mesh castShadow position={[0.25, -0.5, -0.4]} rotation={[-0.1, 0, 0]}>
+              <cylinderGeometry args={[0.12, 0.1, 0.8]} />
+              <meshStandardMaterial map={texture} color="#5a4a3a" roughness={0.9} />
+            </mesh>
+            
+            {/* Paws with claws */}
+            {[-0.25, 0.25].map((x, i) => (
+              <group key={`front-${i}`}>
+                <mesh castShadow position={[x, -0.9, 0.4]}>
+                  <sphereGeometry args={[0.15, 8, 8]} />
+                  <meshStandardMaterial color="#2a2020" roughness={1} />
+                </mesh>
+              </group>
+            ))}
+            
+            {/* Tail */}
+            <mesh castShadow position={[0, 0.1, -0.8]} rotation={[0.5, 0, 0]}>
+              <cylinderGeometry args={[0.08, 0.05, zombie.type === 'bear' ? 0.3 : 0.5]} />
+              <meshStandardMaterial map={texture} color="#4a3a2a" roughness={0.95} />
+            </mesh>
+            
+            {/* Bear specific features */}
+            {zombie.type === 'bear' && (
+              <>
+                {/* Hunched back */}
+                <mesh castShadow position={[0, 0.3, -0.3]}>
+                  <sphereGeometry args={[0.5, 12, 12]} />
+                  <meshStandardMaterial map={texture} color="#3a2919" roughness={0.95} />
+                </mesh>
+                
+                {/* Large claws */}
+                {[-0.25, 0.25].map((x, i) => (
+                  <group key={`claw-${i}`}>
+                    <mesh position={[x, -0.9, 0.5]} rotation={[0, 0, 0]}>
+                      <coneGeometry args={[0.05, 0.2, 8]} />
+                      <meshStandardMaterial color="#1a1a1a" metalness={0.3} roughness={0.6} />
+                    </mesh>
+                  </group>
+                ))}
+              </>
+            )}
+          </>
+        ) : (
+          <>
+            {/* Human Zombie Body */}
+            {/* Main Body - Torso */}
+            <mesh castShadow receiveShadow position={[0, 0, 0]}>
+              <boxGeometry args={[0.8, 1.4, 0.5]} />
+              <meshStandardMaterial 
+                map={texture}
+                roughness={0.9}
+                metalness={0.1}
+                color={zombie.type === 'tank' ? '#666666' : zombie.type === 'runner' ? '#884444' : '#666655'}
+              />
+            </mesh>
+            
+            {/* Ribcage detail */}
+            <mesh castShadow position={[0, 0.3, 0.26]}>
+              <boxGeometry args={[0.7, 1.0, 0.05]} />
+              <meshStandardMaterial color="#555544" roughness={1} />
+            </mesh>
+            
+            {/* Head with horror texture */}
+            <mesh castShadow receiveShadow position={[0, 1.1, 0]}>
+              <sphereGeometry args={[0.4, 16, 16]} />
+              <meshStandardMaterial 
+                map={texture}
+                roughness={0.8}
+                metalness={0.05}
+                color="#997755"
+              />
+            </mesh>
+            
+            {/* Jaw */}
+            <mesh castShadow position={[0, 0.9, 0.2]}>
+              <boxGeometry args={[0.3, 0.15, 0.25]} />
+              <meshStandardMaterial color="#887766" roughness={0.95} />
+            </mesh>
+            
+            {/* Glowing Eyes */}
+            <mesh position={[-0.15, 1.15, 0.35]}>
+              <sphereGeometry args={[0.05, 8, 8]} />
+              <meshStandardMaterial 
+                emissive={zombie.type === 'runner' ? '#ff6600' : '#ff0000'}
+                emissiveIntensity={3}
+                color="#ffffff"
+              />
+            </mesh>
+            <mesh position={[0.15, 1.15, 0.35]}>
+              <sphereGeometry args={[0.05, 8, 8]} />
+              <meshStandardMaterial 
+                emissive={zombie.type === 'runner' ? '#ff6600' : '#ff0000'}
+                emissiveIntensity={3}
+                color="#ffffff"
+              />
+            </mesh>
+            
+            {/* Neck */}
+            <mesh castShadow position={[0, 0.75, 0]}>
+              <cylinderGeometry args={[0.15, 0.18, 0.25]} />
+              <meshStandardMaterial map={texture} color="#887766" roughness={0.9} />
+            </mesh>
+            
+            {/* Arms with texture - improved */}
+            <group position={[-0.5, 0.3, 0]} rotation={[0.3, 0, 0.4]}>
+              {/* Upper arm */}
+              <mesh castShadow receiveShadow>
+                <capsuleGeometry args={[0.14, 0.6, 8, 16]} />
+                <meshStandardMaterial 
+                  map={texture}
+                  roughness={0.9}
+                  metalness={0.05}
+                  color="#886655"
+                />
+              </mesh>
+              {/* Forearm */}
+              <mesh castShadow position={[0, -0.5, 0]} rotation={[-0.3, 0, 0]}>
+                <capsuleGeometry args={[0.12, 0.5, 8, 16]} />
+                <meshStandardMaterial map={texture} color="#776644" roughness={0.95} />
+              </mesh>
+              {/* Claw/Hand */}
+              <mesh position={[0, -0.85, 0]} castShadow>
+                <boxGeometry args={[0.25, 0.15, 0.3]} />
+                <meshStandardMaterial color="#554433" roughness={1} metalness={0} />
+              </mesh>
+              {/* Fingers/Claws */}
+              {[-0.08, 0, 0.08].map((offset, i) => (
+                <mesh key={i} position={[offset, -0.95, 0.1]} rotation={[0.2, 0, 0]}>
+                  <cylinderGeometry args={[0.02, 0.015, 0.15]} />
+                  <meshStandardMaterial color="#332211" roughness={0.8} />
+                </mesh>
+              ))}
+            </group>
+            
+            <group position={[0.5, 0.3, 0]} rotation={[0.3, 0, -0.4]}>
+              {/* Upper arm */}
+              <mesh castShadow receiveShadow>
+                <capsuleGeometry args={[0.14, 0.6, 8, 16]} />
+                <meshStandardMaterial 
+                  map={texture}
+                  roughness={0.9}
+                  metalness={0.05}
+                  color="#886655"
+                />
+              </mesh>
+              {/* Forearm */}
+              <mesh castShadow position={[0, -0.5, 0]} rotation={[-0.3, 0, 0]}>
+                <capsuleGeometry args={[0.12, 0.5, 8, 16]} />
+                <meshStandardMaterial map={texture} color="#776644" roughness={0.95} />
+              </mesh>
+              {/* Claw/Hand */}
+              <mesh position={[0, -0.85, 0]} castShadow>
+                <boxGeometry args={[0.25, 0.15, 0.3]} />
+                <meshStandardMaterial color="#554433" roughness={1} metalness={0} />
+              </mesh>
+              {/* Fingers/Claws */}
+              {[-0.08, 0, 0.08].map((offset, i) => (
+                <mesh key={i} position={[offset, -0.95, 0.1]} rotation={[0.2, 0, 0]}>
+                  <cylinderGeometry args={[0.02, 0.015, 0.15]} />
+                  <meshStandardMaterial color="#332211" roughness={0.8} />
+                </mesh>
+              ))}
+            </group>
+            
+            {/* Legs with texture - improved */}
+            <group position={[-0.22, -1.0, 0]}>
+              {/* Thigh */}
+              <mesh castShadow receiveShadow>
+                <capsuleGeometry args={[0.18, 0.7, 8, 16]} />
+                <meshStandardMaterial 
+                  map={texture}
+                  roughness={0.9}
+                  metalness={0.05}
+                  color="#665544"
+                />
+              </mesh>
+              {/* Shin */}
+              <mesh castShadow position={[0, -0.6, 0]}>
+                <capsuleGeometry args={[0.15, 0.65, 8, 16]} />
+                <meshStandardMaterial map={texture} color="#554433" roughness={0.95} />
+              </mesh>
+              {/* Foot */}
+              <mesh position={[0, -1.0, 0.15]} castShadow>
+                <boxGeometry args={[0.22, 0.15, 0.4]} />
+                <meshStandardMaterial color="#332222" roughness={1} metalness={0} />
+              </mesh>
+            </group>
+            
+            <group position={[0.22, -1.0, 0]}>
+              {/* Thigh */}
+              <mesh castShadow receiveShadow>
+                <capsuleGeometry args={[0.18, 0.7, 8, 16]} />
+                <meshStandardMaterial 
+                  map={texture}
+                  roughness={0.9}
+                  metalness={0.05}
+                  color="#665544"
+                />
+              </mesh>
+              {/* Shin */}
+              <mesh castShadow position={[0, -0.6, 0]}>
+                <capsuleGeometry args={[0.15, 0.65, 8, 16]} />
+                <meshStandardMaterial map={texture} color="#554433" roughness={0.95} />
+              </mesh>
+              {/* Foot */}
+              <mesh position={[0, -1.0, 0.15]} castShadow>
+                <boxGeometry args={[0.22, 0.15, 0.4]} />
+                <meshStandardMaterial color="#332222" roughness={1} metalness={0} />
+              </mesh>
+            </group>
+          </>
+        )}
         
         {/* Special features for tank zombies */}
         {zombie.type === 'tank' && (
