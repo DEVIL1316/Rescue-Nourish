@@ -31,6 +31,45 @@ export function ZombieManager() {
         const angle = (Math.PI * 2 * i) / zombieCount;
         const distance = 10 + Math.random() * 15;
         
+        // Random zombie type with animal zombies included
+        const rand = Math.random();
+        let zombieType: 'walker' | 'runner' | 'tank' | 'dog' | 'bear' | 'wolf';
+        let zombieSpeed: number;
+        let zombieDamage: number;
+        let zombieHealth: number;
+        
+        if (rand < 0.4) {
+          zombieType = 'walker';
+          zombieSpeed = 2;
+          zombieDamage = 10;
+          zombieHealth = wave < 3 ? 50 : wave < 6 ? 75 : 100;
+        } else if (rand < 0.55) {
+          zombieType = 'runner';
+          zombieSpeed = 4;
+          zombieDamage = 15;
+          zombieHealth = wave < 3 ? 40 : wave < 6 ? 60 : 80;
+        } else if (rand < 0.65) {
+          zombieType = 'tank';
+          zombieSpeed = 1.5;
+          zombieDamage = 25;
+          zombieHealth = wave < 3 ? 80 : wave < 6 ? 120 : 150;
+        } else if (rand < 0.78) {
+          zombieType = 'dog';
+          zombieSpeed = 5;
+          zombieDamage = 12;
+          zombieHealth = wave < 3 ? 35 : wave < 6 ? 50 : 65;
+        } else if (rand < 0.90) {
+          zombieType = 'wolf';
+          zombieSpeed = 3.5;
+          zombieDamage = 18;
+          zombieHealth = wave < 3 ? 45 : wave < 6 ? 65 : 85;
+        } else {
+          zombieType = 'bear';
+          zombieSpeed = 2.5;
+          zombieDamage = 30;
+          zombieHealth = wave < 3 ? 90 : wave < 6 ? 130 : 170;
+        }
+        
         const zombie: ZombieType = {
           id: `zombie-${Date.now()}-${Math.random()}`,
           position: {
@@ -38,10 +77,10 @@ export function ZombieManager() {
             y: 0,
             z: Math.sin(angle) * distance,
           },
-          health: wave < 3 ? 50 : wave < 6 ? 75 : 100,
-          type: Math.random() < 0.7 ? 'walker' : Math.random() < 0.9 ? 'runner' : 'tank',
-          speed: Math.random() < 0.7 ? 2 : Math.random() < 0.9 ? 4 : 1.5,
-          damage: Math.random() < 0.7 ? 10 : Math.random() < 0.9 ? 15 : 25,
+          health: zombieHealth,
+          type: zombieType,
+          speed: zombieSpeed,
+          damage: zombieDamage,
           target: null,
         };
         
@@ -60,6 +99,45 @@ export function ZombieManager() {
         const angle = (Math.PI * 2 * i) / zombieCount;
         const distance = 10 + Math.random() * 15;
         
+        // Random zombie type with animal zombies included
+        const rand = Math.random();
+        let zombieType: 'walker' | 'runner' | 'tank' | 'dog' | 'bear' | 'wolf';
+        let zombieSpeed: number;
+        let zombieDamage: number;
+        let zombieHealth: number;
+        
+        if (rand < 0.4) {
+          zombieType = 'walker';
+          zombieSpeed = 2;
+          zombieDamage = 10;
+          zombieHealth = wave < 3 ? 50 : wave < 6 ? 75 : 100;
+        } else if (rand < 0.55) {
+          zombieType = 'runner';
+          zombieSpeed = 4;
+          zombieDamage = 15;
+          zombieHealth = wave < 3 ? 40 : wave < 6 ? 60 : 80;
+        } else if (rand < 0.65) {
+          zombieType = 'tank';
+          zombieSpeed = 1.5;
+          zombieDamage = 25;
+          zombieHealth = wave < 3 ? 80 : wave < 6 ? 120 : 150;
+        } else if (rand < 0.78) {
+          zombieType = 'dog';
+          zombieSpeed = 5;
+          zombieDamage = 12;
+          zombieHealth = wave < 3 ? 35 : wave < 6 ? 50 : 65;
+        } else if (rand < 0.90) {
+          zombieType = 'wolf';
+          zombieSpeed = 3.5;
+          zombieDamage = 18;
+          zombieHealth = wave < 3 ? 45 : wave < 6 ? 65 : 85;
+        } else {
+          zombieType = 'bear';
+          zombieSpeed = 2.5;
+          zombieDamage = 30;
+          zombieHealth = wave < 3 ? 90 : wave < 6 ? 130 : 170;
+        }
+        
         const zombie: ZombieType = {
           id: `zombie-${Date.now()}-${i}`,
           position: {
@@ -67,10 +145,10 @@ export function ZombieManager() {
             y: 0,
             z: Math.sin(angle) * distance,
           },
-          health: wave < 3 ? 50 : wave < 6 ? 75 : 100,
-          type: Math.random() < 0.7 ? 'walker' : Math.random() < 0.9 ? 'runner' : 'tank',
-          speed: Math.random() < 0.7 ? 2 : Math.random() < 0.9 ? 4 : 1.5,
-          damage: Math.random() < 0.7 ? 10 : Math.random() < 0.9 ? 15 : 25,
+          health: zombieHealth,
+          type: zombieType,
+          speed: zombieSpeed,
+          damage: zombieDamage,
           target: null,
         };
         
