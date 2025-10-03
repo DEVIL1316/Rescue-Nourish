@@ -16,17 +16,14 @@ export function Zombie({ zombie }: ZombieProps) {
   const animationTime = useRef(Math.random() * Math.PI * 2);
   
   // Load textures based on zombie type
-  const textureMap: Record<string, string> = {
+  const textureMap = {
     normal: zombieNormalTexture,
     walker: zombieNormalTexture,
     runner: zombieRunnerTexture,
-    tank: zombieTankTexture,
-    dog: zombieNormalTexture,    // Reuse normal texture for animals
-    bear: zombieTankTexture,      // Reuse tank texture (darker)
-    wolf: zombieRunnerTexture     // Reuse runner texture
+    tank: zombieTankTexture
   };
   
-  const texture = useLoader(TextureLoader, textureMap[zombie.type] || zombieNormalTexture);
+  const texture = useLoader(TextureLoader, textureMap[zombie.type as keyof typeof textureMap]);
   texture.wrapS = texture.wrapT = RepeatWrapping;
   texture.repeat.set(2, 2);
   
