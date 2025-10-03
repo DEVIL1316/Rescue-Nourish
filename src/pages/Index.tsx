@@ -3,6 +3,7 @@ import { HUD } from '@/components/ui/HUD';
 import { MainMenu } from '@/components/ui/MainMenu';
 import { GameOver } from '@/components/ui/GameOver';
 import { PauseMenu } from '@/components/ui/PauseMenu';
+import { MiniMap } from '@/components/ui/MiniMap';
 import { useGameStore } from '@/store/gameStore';
 import { useEffect, useRef } from 'react';
 import { toast } from '@/hooks/use-toast';
@@ -122,6 +123,7 @@ const Index = () => {
     <div className="relative w-full h-screen overflow-hidden bg-gradient-dark">
       {gameStatus !== 'menu' && <GameScene />}
       <HUD />
+      {gameStatus === 'playing' && <MiniMap />}
       <MainMenu />
       <GameOver />
       <PauseMenu />
