@@ -23,17 +23,6 @@ export function BurningCars() {
     { x: 0, z: -80, rotation: 0 },
     { x: -90, z: -10, rotation: 0.9 },
     { x: 80, z: 20, rotation: -1.1 },
-    { x: -30, z: 80, rotation: 0.6 },
-    { x: 95, z: -40, rotation: -0.3 },
-    { x: -110, z: -70, rotation: 1.5 },
-    { x: 50, z: 100, rotation: -1.8 },
-    { x: -120, z: 30, rotation: 0.4 },
-    { x: 110, z: -80, rotation: -0.7 },
-    { x: -25, z: -110, rotation: 1.0 },
-    { x: 70, z: -20, rotation: -1.3 },
-    { x: -85, z: 90, rotation: 0.8 },
-    { x: 35, z: 35, rotation: -0.5 },
-    { x: -55, z: -95, rotation: 1.7 },
   ];
   
   return (
