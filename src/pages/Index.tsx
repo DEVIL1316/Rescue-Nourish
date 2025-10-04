@@ -7,23 +7,20 @@ import { MiniMap } from '@/components/ui/MiniMap';
 import { useGameStore } from '@/store/gameStore';
 import { useEffect, useRef } from 'react';
 import { toast } from '@/hooks/use-toast';
+import { playGunSoundByWeapon, playReloadSound, closeAudioContext } from '@/utils/soundEffects';
 
 const Index = () => {
   const { gameStatus, shoot, reload, currentWeapon, damageZombie, zombies, playerPosition } = useGameStore();
-  const audioContext = useRef<AudioContext | null>(null);
   
   useEffect(() => {
-    // Initialize audio context
-    audioContext.current = new AudioContext();
-    
     // Shooting mechanics
     const handleClick = (e: MouseEvent) => {
       if (gameStatus === 'playing' && e.button === 0) {
         if (shoot()) {
-          // Play shooting sound effect (simulated)
-          playShootSound();
+          // Play weapon-specific sound
+          playGunSoundByWeapon(currentWeapon.name);
           
-          // Simple hit detection (ray casting would be better in production)
+          // Simple hit detection
           const hitZombie = zombies.find(zombie => {
             const distance = Math.sqrt(
               Math.pow(zombie.position.x - playerPosition.x, 2) +
@@ -49,6 +46,7 @@ const Index = () => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === 'r' && gameStatus === 'playing') {
         reload();
+        playReloadSound();
         toast({
           title: "Reloading...",
           description: `${currentWeapon.name} reloaded!`,
@@ -62,28 +60,9 @@ const Index = () => {
     return () => {
       window.removeEventListener('mousedown', handleClick);
       window.removeEventListener('keypress', handleKeyPress);
-      audioContext.current?.close();
+      closeAudioContext();
     };
   }, [gameStatus, shoot, reload, currentWeapon, damageZombie, zombies, playerPosition]);
-  
-  const playShootSound = () => {
-    if (audioContext.current) {
-      const oscillator = audioContext.current.createOscillator();
-      const gainNode = audioContext.current.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.current.destination);
-      
-      oscillator.frequency.value = 150;
-      oscillator.type = 'sawtooth';
-      
-      gainNode.gain.setValueAtTime(0.3, audioContext.current.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.current.currentTime + 0.1);
-      
-      oscillator.start(audioContext.current.currentTime);
-      oscillator.stop(audioContext.current.currentTime + 0.1);
-    }
-  };
   
   // Show warning when entering danger zone
   useEffect(() => {

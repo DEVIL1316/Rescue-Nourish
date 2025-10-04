@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { Vector3 } from 'three';
 import { useGameStore, Zombie as ZombieType } from '@/store/gameStore';
 import { Zombie } from './Zombie';
+import { playZombieGroan } from '@/utils/soundEffects';
 
 export function ZombieManager() {
   const { 
@@ -20,6 +21,7 @@ export function ZombieManager() {
   const spawnTimer = useRef(0);
   const waveTimer = useRef(0);
   const damageTimer = useRef(0);
+  const groanTimer = useRef(0);
   
   useEffect(() => {
     if (gameStatus === 'playing' && zombies.length === 0) {
@@ -84,6 +86,13 @@ export function ZombieManager() {
     
     damageTimer.current += delta;
     waveTimer.current += delta;
+    groanTimer.current += delta;
+    
+    // Random zombie groans
+    if (groanTimer.current > 2 && zombies.length > 0 && Math.random() < 0.1) {
+      groanTimer.current = 0;
+      playZombieGroan();
+    }
     
     // Check for zombie proximity damage
     if (damageTimer.current > 1) {

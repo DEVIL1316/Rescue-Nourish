@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { playZombieHit, playZombieDeath } from '@/utils/soundEffects';
 
 export interface Zombie {
   id: string;
@@ -200,11 +201,22 @@ export const useGameStore = create<GameState>((set, get) => ({
     })),
   
   damageZombie: (id, damage) =>
-    set((state) => ({
-      zombies: state.zombies.map((z) =>
-        z.id === id ? { ...z, health: Math.max(0, z.health - damage) } : z
-      ),
-    })),
+    set((state) => {
+      const zombie = state.zombies.find(z => z.id === id);
+      if (zombie) {
+        const newHealth = Math.max(0, zombie.health - damage);
+        if (newHealth === 0) {
+          playZombieDeath();
+        } else {
+          playZombieHit();
+        }
+      }
+      return {
+        zombies: state.zombies.map((z) =>
+          z.id === id ? { ...z, health: Math.max(0, z.health - damage) } : z
+        ),
+      };
+    }),
   
   removeZombie: (id) =>
     set((state) => ({
