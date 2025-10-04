@@ -1,6 +1,7 @@
 import { useGameStore } from '@/store/gameStore';
 import { Heart, Shield, Target, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
 
 export function HUD() {
   const { 
@@ -11,7 +12,9 @@ export function HUD() {
     kills, 
     wave,
     safeZoneRadius,
-    gameStatus
+    gameStatus,
+    weapons,
+    switchWeapon
   } = useGameStore();
   
   const [showDamage, setShowDamage] = useState(false);
@@ -126,10 +129,79 @@ export function HUD() {
           </div>
         </div>
         
+        {/* Weapon Switcher - Centered */}
+        <div className="flex justify-center mt-6">
+          <div className="bg-card/90 backdrop-blur-sm p-3 rounded-sm border border-border pointer-events-auto">
+            <div className="flex gap-3">
+              {weapons.map((weapon, index) => (
+                <button
+                  key={weapon.name}
+                  onClick={() => switchWeapon(index)}
+                  className={cn(
+                    "relative flex flex-col items-center gap-2 p-3 rounded transition-all",
+                    "hover:bg-accent/20",
+                    currentWeapon.name === weapon.name 
+                      ? "bg-accent/30 border-2 border-accent" 
+                      : "border-2 border-transparent"
+                  )}
+                >
+                  {/* Weapon Icon */}
+                  <div className="w-16 h-12 flex items-center justify-center">
+                    {weapon.name === 'Pistol' && (
+                      <svg viewBox="0 0 64 48" className="w-full h-full">
+                        <rect x="8" y="20" width="20" height="8" fill="currentColor" />
+                        <rect x="28" y="16" width="12" height="16" fill="currentColor" />
+                        <rect x="40" y="20" width="8" height="8" fill="currentColor" />
+                        <rect x="20" y="28" width="8" height="8" fill="currentColor" />
+                      </svg>
+                    )}
+                    {weapon.name === 'Shotgun' && (
+                      <svg viewBox="0 0 64 48" className="w-full h-full">
+                        <rect x="4" y="20" width="36" height="8" fill="currentColor" />
+                        <rect x="40" y="18" width="12" height="12" fill="currentColor" />
+                        <rect x="52" y="22" width="8" height="4" fill="currentColor" />
+                        <rect x="16" y="28" width="8" height="8" fill="currentColor" />
+                      </svg>
+                    )}
+                    {weapon.name === 'Assault Rifle' && (
+                      <svg viewBox="0 0 64 48" className="w-full h-full">
+                        <rect x="4" y="20" width="40" height="6" fill="currentColor" />
+                        <rect x="44" y="18" width="12" height="10" fill="currentColor" />
+                        <rect x="56" y="21" width="6" height="4" fill="currentColor" />
+                        <rect x="20" y="26" width="8" height="6" fill="currentColor" />
+                        <rect x="12" y="16" width="4" height="4" fill="currentColor" />
+                      </svg>
+                    )}
+                    {weapon.name === 'Sniper Rifle' && (
+                      <svg viewBox="0 0 64 48" className="w-full h-full">
+                        <rect x="2" y="22" width="48" height="4" fill="currentColor" />
+                        <rect x="50" y="20" width="10" height="8" fill="currentColor" />
+                        <rect x="24" y="26" width="8" height="6" fill="currentColor" />
+                        <rect x="12" y="18" width="8" height="4" fill="currentColor" />
+                        <circle cx="8" cy="24" r="4" fill="currentColor" />
+                      </svg>
+                    )}
+                  </div>
+                  
+                  {/* Weapon Name & Ammo */}
+                  <div className="text-center">
+                    <div className="text-xs font-bold text-foreground">{weapon.name}</div>
+                    <div className="text-xs text-yellow-500 font-bold">{weapon.ammo}/{weapon.maxAmmo}</div>
+                  </div>
+                  
+                  {/* Key hint */}
+                  <div className="absolute -top-2 -right-2 w-5 h-5 bg-muted rounded-full flex items-center justify-center text-xs font-bold text-muted-foreground">
+                    {index + 1}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        
         {/* Controls hint */}
-        <div className="text-center mt-4 text-muted-foreground text-sm space-y-1">
-          <div>WASD: Move | Shift: Sprint | Space: Jump | Mouse: Aim & Shoot</div>
-          <div>1/2/3: Switch Weapons | ESC: Pause</div>
+        <div className="text-center mt-3 text-muted-foreground text-xs">
+          WASD: Move | Shift: Sprint | Space: Jump | R: Reload | ESC: Pause
         </div>
       </div>
     </>
