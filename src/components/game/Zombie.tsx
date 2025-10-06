@@ -20,10 +20,13 @@ export function Zombie({ zombie }: ZombieProps) {
     normal: zombieNormalTexture,
     walker: zombieNormalTexture,
     runner: zombieRunnerTexture,
-    tank: zombieTankTexture
+    tank: zombieTankTexture,
+    dog: zombieRunnerTexture,  // Fast animal - use runner texture
+    wolf: zombieRunnerTexture, // Fast animal - use runner texture
+    bear: zombieTankTexture    // Strong animal - use tank texture
   };
   
-  const texture = useLoader(TextureLoader, textureMap[zombie.type as keyof typeof textureMap]);
+  const texture = useLoader(TextureLoader, textureMap[zombie.type] || zombieNormalTexture);
   texture.wrapS = texture.wrapT = RepeatWrapping;
   texture.repeat.set(2, 2);
   
