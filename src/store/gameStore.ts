@@ -35,6 +35,7 @@ interface GameState {
   // Zombies
   zombies: Zombie[];
   wave: number;
+  zombieLevel: number;
   
   // Game state
   gameStatus: 'menu' | 'playing' | 'paused' | 'gameOver';
@@ -63,6 +64,7 @@ interface GameState {
   
   shrinkSafeZone: () => void;
   nextWave: () => void;
+  increaseZombieLevel: () => void;
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -128,6 +130,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   // Initial zombies
   zombies: [],
   wave: 1,
+  zombieLevel: 1,
   
   // Initial game state
   gameStatus: 'menu',
@@ -243,6 +246,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       wave: 1,
       zombies: [],
       safeZoneRadius: 100,
+      zombieLevel: 1,
     })),
   
   pauseGame: () =>
@@ -268,5 +272,10 @@ export const useGameStore = create<GameState>((set, get) => ({
   nextWave: () =>
     set((state) => ({
       wave: state.wave + 1,
+    })),
+  
+  increaseZombieLevel: () =>
+    set((state) => ({
+      zombieLevel: state.zombieLevel + 1,
     })),
 }));

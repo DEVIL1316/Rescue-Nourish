@@ -15,23 +15,62 @@ export function ZombieManager() {
     playerPosition,
     updateZombiePosition,
     removeZombie,
-    takeDamage
+    takeDamage,
+    zombieLevel,
+    increaseZombieLevel
   } = useGameStore();
   
   const spawnTimer = useRef(0);
   const waveTimer = useRef(0);
   const damageTimer = useRef(0);
   const groanTimer = useRef(0);
+  const levelTimer = useRef(0);
   
   useEffect(() => {
     if (gameStatus === 'playing' && zombies.length === 0) {
-      console.log('Spawning initial wave, current wave:', wave);
+      console.log('Spawning initial wave, current wave:', wave, 'level:', zombieLevel);
       // Spawn initial wave
       const zombieCount = 3 + wave * 2;
       
       for (let i = 0; i < zombieCount; i++) {
         const angle = (Math.PI * 2 * i) / zombieCount;
         const distance = 10 + Math.random() * 15;
+        
+        // Calculate stats based on level
+        const baseHealth = 80 + (zombieLevel * 20);
+        const baseDamage = 15 + (zombieLevel * 5);
+        const baseSpeed = 2 + (zombieLevel * 0.3);
+        
+        // Random zombie type
+        const rand = Math.random();
+        let type: ZombieType['type'];
+        let health: number;
+        let speed: number;
+        let damage: number;
+        
+        if (rand < 0.5) {
+          type = 'walker';
+          health = baseHealth;
+          speed = baseSpeed;
+          damage = baseDamage;
+        } else if (rand < 0.75) {
+          type = 'runner';
+          health = baseHealth * 0.7;
+          speed = baseSpeed * 1.8;
+          damage = baseDamage * 1.2;
+        } else if (rand < 0.9) {
+          type = 'tank';
+          health = baseHealth * 2.5;
+          speed = baseSpeed * 0.6;
+          damage = baseDamage * 2;
+        } else {
+          // Animal zombies at higher levels
+          const animalTypes: ZombieType['type'][] = ['dog', 'wolf', 'bear'];
+          type = animalTypes[Math.floor(Math.random() * animalTypes.length)];
+          health = baseHealth * 1.5;
+          speed = baseSpeed * 1.4;
+          damage = baseDamage * 1.3;
+        }
         
         const zombie: ZombieType = {
           id: `zombie-${Date.now()}-${Math.random()}`,
@@ -40,10 +79,10 @@ export function ZombieManager() {
             y: 0,
             z: Math.sin(angle) * distance,
           },
-          health: wave < 3 ? 50 : wave < 6 ? 75 : 100,
-          type: Math.random() < 0.7 ? 'walker' : Math.random() < 0.9 ? 'runner' : 'tank',
-          speed: Math.random() < 0.7 ? 2 : Math.random() < 0.9 ? 4 : 1.5,
-          damage: Math.random() < 0.7 ? 10 : Math.random() < 0.9 ? 15 : 25,
+          health,
+          type,
+          speed,
+          damage,
           target: null,
         };
         
@@ -51,16 +90,52 @@ export function ZombieManager() {
         spawnZombie(zombie);
       }
     }
-  }, [gameStatus, wave, zombies.length, spawnZombie]);
+  }, [gameStatus, wave, zombies.length, spawnZombie, zombieLevel]);
   
   const spawnWave = () => {
     const zombieCount = 3 + wave * 2;
-    console.log('Spawning new wave with', zombieCount, 'zombies');
+    console.log('Spawning new wave with', zombieCount, 'zombies at level', zombieLevel);
     
     for (let i = 0; i < zombieCount; i++) {
       setTimeout(() => {
         const angle = (Math.PI * 2 * i) / zombieCount;
         const distance = 10 + Math.random() * 15;
+        
+        // Calculate stats based on level
+        const baseHealth = 80 + (zombieLevel * 20);
+        const baseDamage = 15 + (zombieLevel * 5);
+        const baseSpeed = 2 + (zombieLevel * 0.3);
+        
+        // Random zombie type
+        const rand = Math.random();
+        let type: ZombieType['type'];
+        let health: number;
+        let speed: number;
+        let damage: number;
+        
+        if (rand < 0.5) {
+          type = 'walker';
+          health = baseHealth;
+          speed = baseSpeed;
+          damage = baseDamage;
+        } else if (rand < 0.75) {
+          type = 'runner';
+          health = baseHealth * 0.7;
+          speed = baseSpeed * 1.8;
+          damage = baseDamage * 1.2;
+        } else if (rand < 0.9) {
+          type = 'tank';
+          health = baseHealth * 2.5;
+          speed = baseSpeed * 0.6;
+          damage = baseDamage * 2;
+        } else {
+          // Animal zombies at higher levels
+          const animalTypes: ZombieType['type'][] = ['dog', 'wolf', 'bear'];
+          type = animalTypes[Math.floor(Math.random() * animalTypes.length)];
+          health = baseHealth * 1.5;
+          speed = baseSpeed * 1.4;
+          damage = baseDamage * 1.3;
+        }
         
         const zombie: ZombieType = {
           id: `zombie-${Date.now()}-${i}`,
@@ -69,10 +144,10 @@ export function ZombieManager() {
             y: 0,
             z: Math.sin(angle) * distance,
           },
-          health: wave < 3 ? 50 : wave < 6 ? 75 : 100,
-          type: Math.random() < 0.7 ? 'walker' : Math.random() < 0.9 ? 'runner' : 'tank',
-          speed: Math.random() < 0.7 ? 2 : Math.random() < 0.9 ? 4 : 1.5,
-          damage: Math.random() < 0.7 ? 10 : Math.random() < 0.9 ? 15 : 25,
+          health,
+          type,
+          speed,
+          damage,
           target: null,
         };
         
@@ -87,6 +162,14 @@ export function ZombieManager() {
     damageTimer.current += delta;
     waveTimer.current += delta;
     groanTimer.current += delta;
+    levelTimer.current += delta;
+    
+    // Increase zombie level every 60 seconds (1 minute)
+    if (levelTimer.current > 60) {
+      levelTimer.current = 0;
+      increaseZombieLevel();
+      console.log('Zombie level increased to:', zombieLevel + 1);
+    }
     
     // Random zombie groans
     if (groanTimer.current > 2 && zombies.length > 0 && Math.random() < 0.1) {
