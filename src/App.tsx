@@ -10,6 +10,7 @@ import FoodDonations from "./pages/donation/FoodDonations";
 import MedicalNeeds from "./pages/donation/MedicalNeeds";
 import DonorChat from "./pages/donation/DonorChat";
 import NGODirectory from "./pages/donation/NGODirectory";
+import Profile from "./pages/donation/Profile";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/needs" element={<RoleGuard><MedicalNeeds /></RoleGuard>} />
           <Route path="/chat" element={<RoleGuard><DonorChat /></RoleGuard>} />
           <Route path="/ngos" element={<RoleGuard><NGODirectory /></RoleGuard>} />
+          <Route path="/profile" element={<RoleGuard><Profile /></RoleGuard>} />
           <Route path="/login" element={<Navigate to="/welcome" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
