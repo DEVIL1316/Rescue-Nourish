@@ -7,8 +7,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Star, MapPin, Phone, Mail, Users } from 'lucide-react';
+import { Plus, Star, MapPin, Phone, Mail, Users, UserCheck } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+
+const SAMPLE_ORPHANAGES = [
+  { id: 'sample-1', name: 'Sunshine Children\'s Home', location: 'Mumbai, Maharashtra', contact_phone: '+91 22 2345 6789', contact_email: 'info@sunshinechildren.org', description: 'A loving home for abandoned and orphaned children providing education and care.', needs_description: 'School supplies, clothing, nutritious food', number_of_people: 85, created_by: 'system' },
+  { id: 'sample-2', name: 'Hope Foundation Orphanage', location: 'Delhi, NCR', contact_phone: '+91 11 9876 5432', contact_email: 'contact@hopefoundation.in', description: 'Providing shelter, education, and vocational training to underprivileged children.', needs_description: 'Books, medicines, winter clothing', number_of_people: 120, created_by: 'system' },
+  { id: 'sample-3', name: 'Little Angels Care Center', location: 'Bangalore, Karnataka', contact_phone: '+91 80 4567 8901', contact_email: 'hello@littleangels.org', description: 'Dedicated to nurturing children with special needs and providing therapeutic support.', needs_description: 'Medical equipment, therapy materials, food supplies', number_of_people: 45, created_by: 'system' },
+  { id: 'sample-4', name: 'Rainbow Kids Shelter', location: 'Chennai, Tamil Nadu', contact_phone: '+91 44 2233 4455', contact_email: 'admin@rainbowkids.org', description: 'Safe haven for street children offering rehabilitation and education programs.', needs_description: 'Beds, blankets, educational toys, hygiene kits', number_of_people: 67, created_by: 'system' },
+  { id: 'sample-5', name: 'Blessing Home for Children', location: 'Kolkata, West Bengal', contact_phone: '+91 33 6677 8899', contact_email: 'care@blessinghome.in', description: 'A warm family environment for orphaned and abandoned children since 1998.', needs_description: 'Rice, dal, cooking oil, school uniforms', number_of_people: 92, created_by: 'system' },
+];
 
 export default function FoodDonations() {
   const { user } = useAuth();
@@ -17,7 +25,7 @@ export default function FoodDonations() {
   const [showAddDonation, setShowAddDonation] = useState(false);
   const [showAddOrphanage, setShowAddOrphanage] = useState(false);
   const [donationForm, setDonationForm] = useState({ title: '', description: '', food_type: '', quantity: '', quality_rating: 5 });
-  const [orphanageForm, setOrphanageForm] = useState({ name: '', location: '', contact_phone: '', contact_email: '', description: '', needs_description: '' });
+  const [orphanageForm, setOrphanageForm] = useState({ name: '', location: '', contact_phone: '', contact_email: '', description: '', needs_description: '', number_of_people: 0 });
 
   useEffect(() => {
     fetchData();
@@ -29,7 +37,11 @@ export default function FoodDonations() {
       supabase.from('orphanages').select('*').order('created_at', { ascending: false }),
     ]);
     if (donRes.data) setDonations(donRes.data);
-    if (orphRes.data) setOrphanages(orphRes.data);
+    if (orphRes.data && orphRes.data.length > 0) {
+      setOrphanages(orphRes.data);
+    } else {
+      setOrphanages(SAMPLE_ORPHANAGES);
+    }
   };
 
   const addDonation = async (e: React.FormEvent) => {
@@ -50,11 +62,11 @@ export default function FoodDonations() {
   const addOrphanage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    const { error } = await supabase.from('orphanages').insert({ ...orphanageForm, created_by: user.id });
+    const { error } = await supabase.from('orphanages').insert({ ...orphanageForm, number_of_people: orphanageForm.number_of_people || null, created_by: user.id });
     if (error) { toast({ title: 'Error', description: error.message, variant: 'destructive' }); return; }
     toast({ title: 'Orphanage added!' });
     setShowAddOrphanage(false);
-    setOrphanageForm({ name: '', location: '', contact_phone: '', contact_email: '', description: '', needs_description: '' });
+    setOrphanageForm({ name: '', location: '', contact_phone: '', contact_email: '', description: '', needs_description: '', number_of_people: 0 });
     fetchData();
   };
 
@@ -112,7 +124,8 @@ export default function FoodDonations() {
                 <div><Label>Location</Label><Input value={orphanageForm.location} onChange={e => setOrphanageForm(p => ({ ...p, location: e.target.value }))} /></div>
                 <div><Label>Phone</Label><Input value={orphanageForm.contact_phone} onChange={e => setOrphanageForm(p => ({ ...p, contact_phone: e.target.value }))} /></div>
                 <div><Label>Email</Label><Input value={orphanageForm.contact_email} onChange={e => setOrphanageForm(p => ({ ...p, contact_email: e.target.value }))} /></div>
-                <div className="md:col-span-2"><Label>Description</Label><Textarea value={orphanageForm.description} onChange={e => setOrphanageForm(p => ({ ...p, description: e.target.value }))} /></div>
+                <div><Label>Number of People</Label><Input type="number" value={orphanageForm.number_of_people || ''} onChange={e => setOrphanageForm(p => ({ ...p, number_of_people: parseInt(e.target.value) || 0 }))} placeholder="e.g. 50" /></div>
+                <div><Label>Description</Label><Textarea value={orphanageForm.description} onChange={e => setOrphanageForm(p => ({ ...p, description: e.target.value }))} /></div>
                 <div className="md:col-span-2"><Label>Needs</Label><Textarea value={orphanageForm.needs_description} onChange={e => setOrphanageForm(p => ({ ...p, needs_description: e.target.value }))} placeholder="What do they need?" /></div>
                 <Button type="submit" className="bg-orange-600 hover:bg-orange-700 md:col-span-2">Add Orphanage</Button>
               </form>
@@ -166,7 +179,14 @@ export default function FoodDonations() {
               {orphanages.map(o => (
                 <Card key={o.id} className="border-orange-100 hover:shadow-lg transition-shadow">
                   <CardContent className="p-5">
-                    <h3 className="font-bold text-orange-800 text-lg">{o.name}</h3>
+                    <div className="flex justify-between items-start">
+                      <h3 className="font-bold text-orange-800 text-lg">{o.name}</h3>
+                      {o.number_of_people && (
+                        <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full font-semibold flex items-center gap-1">
+                          <UserCheck className="h-3 w-3" /> {o.number_of_people} people
+                        </span>
+                      )}
+                    </div>
                     {o.location && <p className="text-sm text-gray-600 flex items-center gap-1 mt-1"><MapPin className="h-3 w-3" /> {o.location}</p>}
                     {o.contact_phone && <p className="text-sm text-gray-600 flex items-center gap-1"><Phone className="h-3 w-3" /> {o.contact_phone}</p>}
                     {o.contact_email && <p className="text-sm text-gray-600 flex items-center gap-1"><Mail className="h-3 w-3" /> {o.contact_email}</p>}
