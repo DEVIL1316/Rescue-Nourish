@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useRole } from '@/hooks/useRole';
-import { Heart, Utensils, Stethoscope, MessageCircle, Building2, LogOut, HandHeart } from 'lucide-react';
+import { Heart, Utensils, Stethoscope, MessageCircle, Building2, LogOut, HandHeart, UserCog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const navItems = [
@@ -9,6 +9,7 @@ const navItems = [
   { path: '/needs', label: 'Medical & Needs', icon: Stethoscope },
   { path: '/chat', label: 'Donors & Chat', icon: MessageCircle },
   { path: '/ngos', label: 'NGOs', icon: Building2 },
+  { path: '/profile', label: 'Profile', icon: UserCog },
 ];
 
 export function DonationLayout({ children }: { children: ReactNode }) {

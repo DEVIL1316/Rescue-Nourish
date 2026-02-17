@@ -167,6 +167,7 @@ export type Database = {
           location: string | null
           name: string
           needs_description: string | null
+          number_of_people: number | null
         }
         Insert: {
           contact_email?: string | null
@@ -179,6 +180,7 @@ export type Database = {
           location?: string | null
           name: string
           needs_description?: string | null
+          number_of_people?: number | null
         }
         Update: {
           contact_email?: string | null
@@ -191,6 +193,7 @@ export type Database = {
           location?: string | null
           name?: string
           needs_description?: string | null
+          number_of_people?: number | null
         }
         Relationships: []
       }
