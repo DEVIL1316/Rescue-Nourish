@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useRole } from '@/hooks/useRole';
 import { Heart, Utensils, Stethoscope, MessageCircle, Building2, LogOut, HandHeart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -12,12 +12,17 @@ const navItems = [
 ];
 
 export function DonationLayout({ children }: { children: ReactNode }) {
-  const { signOut, user } = useAuth();
+  const { role, clearRole } = useRole();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLeave = () => {
+    clearRole();
+    navigate('/welcome');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-orange-50">
-      {/* Top Nav */}
       <header className="bg-white/80 backdrop-blur-md border-b border-emerald-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
@@ -46,14 +51,18 @@ export function DonationLayout({ children }: { children: ReactNode }) {
             })}
           </nav>
 
-          <Button variant="ghost" size="sm" onClick={signOut} className="text-red-500 hover:bg-red-50">
-            <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline ml-1">Logout</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-emerald-600 capitalize hidden sm:inline">
+              {role?.replace('_', ' ')}
+            </span>
+            <Button variant="ghost" size="sm" onClick={handleLeave} className="text-red-500 hover:bg-red-50">
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline ml-1">Switch Role</span>
+            </Button>
+          </div>
         </div>
       </header>
 
-      {/* Content */}
       <main className="max-w-7xl mx-auto px-4 py-6">
         {children}
       </main>
