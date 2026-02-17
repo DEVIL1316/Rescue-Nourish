@@ -1,47 +1,26 @@
-import { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart, Users, HandHeart, ArrowRight } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
+import { useRole, AppRole } from '@/hooks/useRole';
+import { Heart, Users, HandHeart, Home } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+
+const roles: { value: AppRole; label: string; icon: typeof Heart; description: string; color: string; borderColor: string; bgColor: string }[] = [
+  { value: 'donor', label: 'Donor', icon: Heart, description: 'I want to donate food, clothes, or supplies', color: 'text-emerald-800', borderColor: 'border-emerald-500 bg-emerald-50', bgColor: 'hover:border-emerald-300' },
+  { value: 'ngo', label: 'NGO', icon: Users, description: 'I represent an NGO organization', color: 'text-orange-800', borderColor: 'border-orange-500 bg-orange-50', bgColor: 'hover:border-orange-300' },
+  { value: 'orphanage_member', label: 'Orphanage Member', icon: Home, description: 'I am part of an orphanage', color: 'text-blue-800', borderColor: 'border-blue-500 bg-blue-50', bgColor: 'hover:border-blue-300' },
+];
 
 export default function Login() {
-  const { signIn, signUp } = useAuth();
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({
-    email: '',
-    password: '',
-    fullName: '',
-    roleType: 'donor' as 'donor' | 'ngo',
-  });
+  const { setRole } = useRole();
+  const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      if (isSignUp) {
-        const { error } = await signUp(form.email, form.password, form.fullName, form.roleType);
-        if (error) throw error;
-        toast({ title: 'Account created!', description: 'Please check your email to verify your account.' });
-      } else {
-        const { error } = await signIn(form.email, form.password);
-        if (error) throw error;
-      }
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
-    } finally {
-      setLoading(false);
-    }
+  const handleSelect = (role: AppRole) => {
+    setRole(role);
+    navigate('/');
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-orange-50 to-amber-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
+      <div className="w-full max-w-lg">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-4">
             <Heart className="h-10 w-10 text-emerald-600 fill-emerald-600" />
@@ -57,102 +36,25 @@ export default function Login() {
 
         <Card className="border-emerald-200 shadow-xl bg-white/90 backdrop-blur">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl text-emerald-800">
-              {isSignUp ? 'Create Account' : 'Welcome Back'}
-            </CardTitle>
-            <CardDescription>
-              {isSignUp ? 'Join our mission to help those in need' : 'Sign in to continue your mission'}
-            </CardDescription>
+            <CardTitle className="text-2xl text-emerald-800">Choose Your Role</CardTitle>
+            <CardDescription>Select how you'd like to use the platform</CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {isSignUp && (
-                <>
-                  <div>
-                    <Label htmlFor="fullName" className="text-emerald-800">Full Name</Label>
-                    <Input
-                      id="fullName"
-                      value={form.fullName}
-                      onChange={e => setForm(p => ({ ...p, fullName: e.target.value }))}
-                      placeholder="Your full name"
-                      required
-                      className="border-emerald-200 focus:ring-emerald-500"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-emerald-800">I am a</Label>
-                    <div className="grid grid-cols-2 gap-3 mt-2">
-                      <button
-                        type="button"
-                        onClick={() => setForm(p => ({ ...p, roleType: 'donor' }))}
-                        className={`p-3 rounded-lg border-2 text-center transition-all ${
-                          form.roleType === 'donor'
-                            ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
-                            : 'border-gray-200 text-gray-600 hover:border-emerald-300'
-                        }`}
-                      >
-                        <Heart className="h-5 w-5 mx-auto mb-1" />
-                        <span className="text-sm font-semibold">Donor</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setForm(p => ({ ...p, roleType: 'ngo' }))}
-                        className={`p-3 rounded-lg border-2 text-center transition-all ${
-                          form.roleType === 'ngo'
-                            ? 'border-orange-500 bg-orange-50 text-orange-800'
-                            : 'border-gray-200 text-gray-600 hover:border-orange-300'
-                        }`}
-                      >
-                        <Users className="h-5 w-5 mx-auto mb-1" />
-                        <span className="text-sm font-semibold">NGO</span>
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-              <div>
-                <Label htmlFor="email" className="text-emerald-800">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={form.email}
-                  onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-                  placeholder="you@example.com"
-                  required
-                  className="border-emerald-200 focus:ring-emerald-500"
-                />
-              </div>
-              <div>
-                <Label htmlFor="password" className="text-emerald-800">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={form.password}
-                  onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
-                  placeholder="••••••••"
-                  required
-                  minLength={6}
-                  className="border-emerald-200 focus:ring-emerald-500"
-                />
-              </div>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-12"
-              >
-                {loading ? 'Please wait...' : isSignUp ? 'Create Account' : 'Sign In'}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </form>
-
-            <div className="mt-6 text-center">
+          <CardContent className="space-y-3">
+            {roles.map(r => (
               <button
-                onClick={() => setIsSignUp(!isSignUp)}
-                className="text-sm text-emerald-600 hover:text-emerald-800 font-medium"
+                key={r.value}
+                onClick={() => handleSelect(r.value)}
+                className={`w-full p-4 rounded-xl border-2 text-left transition-all border-gray-200 ${r.bgColor} hover:shadow-md`}
               >
-                {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+                <div className="flex items-center gap-3">
+                  <r.icon className={`h-8 w-8 ${r.color}`} />
+                  <div>
+                    <p className={`font-bold ${r.color}`}>{r.label}</p>
+                    <p className="text-sm text-gray-500">{r.description}</p>
+                  </div>
+                </div>
               </button>
-            </div>
+            ))}
           </CardContent>
         </Card>
       </div>

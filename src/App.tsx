@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+import { useRole } from "@/hooks/useRole";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/donation/Login";
 import FoodDonations from "./pages/donation/FoodDonations";
@@ -13,10 +13,9 @@ import NGODirectory from "./pages/donation/NGODirectory";
 
 const queryClient = new QueryClient();
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-emerald-50"><p className="text-emerald-600">Loading...</p></div>;
-  if (!user) return <Navigate to="/login" replace />;
+function RoleGuard({ children }: { children: React.ReactNode }) {
+  const { role } = useRole();
+  if (!role) return <Navigate to="/welcome" replace />;
   return <>{children}</>;
 }
 
@@ -27,12 +26,12 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/" element={<ProtectedRoute><FoodDonations /></ProtectedRoute>} />
-          <Route path="/needs" element={<ProtectedRoute><MedicalNeeds /></ProtectedRoute>} />
-          <Route path="/chat" element={<ProtectedRoute><DonorChat /></ProtectedRoute>} />
-          <Route path="/ngos" element={<ProtectedRoute><NGODirectory /></ProtectedRoute>} />
-
+          <Route path="/welcome" element={<Login />} />
+          <Route path="/" element={<RoleGuard><FoodDonations /></RoleGuard>} />
+          <Route path="/needs" element={<RoleGuard><MedicalNeeds /></RoleGuard>} />
+          <Route path="/chat" element={<RoleGuard><DonorChat /></RoleGuard>} />
+          <Route path="/ngos" element={<RoleGuard><NGODirectory /></RoleGuard>} />
+          <Route path="/login" element={<Navigate to="/welcome" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
