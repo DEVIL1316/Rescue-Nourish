@@ -4,7 +4,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/donation/Login";
 import FoodDonations from "./pages/donation/FoodDonations";
@@ -17,7 +16,7 @@ const queryClient = new QueryClient();
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-emerald-50"><p className="text-emerald-600">Loading...</p></div>;
-  if (!user) return <Navigate to="/donate/login" replace />;
+  if (!user) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
 
@@ -28,15 +27,11 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Zombie Game */}
-          <Route path="/" element={<Index />} />
-
-          {/* Donation App */}
-          <Route path="/donate/login" element={<Login />} />
-          <Route path="/donate" element={<ProtectedRoute><FoodDonations /></ProtectedRoute>} />
-          <Route path="/donate/needs" element={<ProtectedRoute><MedicalNeeds /></ProtectedRoute>} />
-          <Route path="/donate/chat" element={<ProtectedRoute><DonorChat /></ProtectedRoute>} />
-          <Route path="/donate/ngos" element={<ProtectedRoute><NGODirectory /></ProtectedRoute>} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<ProtectedRoute><FoodDonations /></ProtectedRoute>} />
+          <Route path="/needs" element={<ProtectedRoute><MedicalNeeds /></ProtectedRoute>} />
+          <Route path="/chat" element={<ProtectedRoute><DonorChat /></ProtectedRoute>} />
+          <Route path="/ngos" element={<ProtectedRoute><NGODirectory /></ProtectedRoute>} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>

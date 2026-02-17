@@ -5,10 +5,10 @@ import { Heart, Utensils, Stethoscope, MessageCircle, Building2, LogOut, HandHea
 import { Button } from '@/components/ui/button';
 
 const navItems = [
-  { path: '/donate', label: 'Food & Donations', icon: Utensils },
-  { path: '/donate/needs', label: 'Medical & Needs', icon: Stethoscope },
-  { path: '/donate/chat', label: 'Donors & Chat', icon: MessageCircle },
-  { path: '/donate/ngos', label: 'NGOs', icon: Building2 },
+  { path: '/', label: 'Food & Donations', icon: Utensils },
+  { path: '/needs', label: 'Medical & Needs', icon: Stethoscope },
+  { path: '/chat', label: 'Donors & Chat', icon: MessageCircle },
+  { path: '/ngos', label: 'NGOs', icon: Building2 },
 ];
 
 export function DonationLayout({ children }: { children: ReactNode }) {
@@ -20,7 +20,7 @@ export function DonationLayout({ children }: { children: ReactNode }) {
       {/* Top Nav */}
       <header className="bg-white/80 backdrop-blur-md border-b border-emerald-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/donate" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <Heart className="h-7 w-7 text-emerald-600 fill-emerald-600" />
             <HandHeart className="h-7 w-7 text-orange-500" />
             <span className="text-xl font-black text-emerald-800 tracking-tight hidden sm:inline">
