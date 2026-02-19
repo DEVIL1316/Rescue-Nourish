@@ -17,39 +17,54 @@ export type Database = {
       donations: {
         Row: {
           created_at: string
+          delivered_at: string | null
           description: string | null
           donor_id: string
           food_type: string | null
           id: string
           image_url: string | null
+          picked_up_at: string | null
           quality_rating: number | null
           quantity: string | null
+          recipient_id: string | null
+          recipient_name: string | null
           status: string
           title: string
+          tracking_status: string
         }
         Insert: {
           created_at?: string
+          delivered_at?: string | null
           description?: string | null
           donor_id: string
           food_type?: string | null
           id?: string
           image_url?: string | null
+          picked_up_at?: string | null
           quality_rating?: number | null
           quantity?: string | null
+          recipient_id?: string | null
+          recipient_name?: string | null
           status?: string
           title: string
+          tracking_status?: string
         }
         Update: {
           created_at?: string
+          delivered_at?: string | null
           description?: string | null
           donor_id?: string
           food_type?: string | null
           id?: string
           image_url?: string | null
+          picked_up_at?: string | null
           quality_rating?: number | null
           quantity?: string | null
+          recipient_id?: string | null
+          recipient_name?: string | null
           status?: string
           title?: string
+          tracking_status?: string
         }
         Relationships: []
       }
@@ -152,6 +167,39 @@ export type Database = {
           name?: string
           user_id?: string
           website?: string | null
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          related_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          related_id?: string | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          related_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
         }
         Relationships: []
       }
