@@ -1,14 +1,17 @@
 import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useRole } from '@/hooks/useRole';
-import { Heart, Utensils, Stethoscope, MessageCircle, Building2, LogOut, HandHeart, UserCog } from 'lucide-react';
+import { Heart, Utensils, Stethoscope, MessageCircle, Building2, LogOut, HandHeart, UserCog, BarChart3, Truck, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const navItems = [
   { path: '/', label: 'Food & Donations', icon: Utensils },
+  { path: '/tracking', label: 'Tracking', icon: Truck },
   { path: '/needs', label: 'Medical & Needs', icon: Stethoscope },
   { path: '/chat', label: 'Donors & Chat', icon: MessageCircle },
   { path: '/ngos', label: 'NGOs', icon: Building2 },
+  { path: '/notifications', label: 'Notifications', icon: Bell },
+  { path: '/analytics', label: 'Analytics', icon: BarChart3 },
   { path: '/profile', label: 'Profile', icon: UserCog },
 ];
 

@@ -2,110 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    /* Apocalyptic color palette */
-    --background: 0 0% 5%;
-    --foreground: 0 0% 88%;
+    /* Warm, compassionate donation platform palette */
+    --background: 140 20% 98%;
+    --foreground: 150 20% 15%;
 
-    --card: 0 0% 8%;
-    --card-foreground: 0 0% 85%;
+    --card: 0 0% 100%;
+    --card-foreground: 150 20% 15%;
 
-    --popover: 0 0% 7%;
-    --popover-foreground: 0 0% 88%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 20% 15%;
 
-    /* Blood red primary */
-    --primary: 0 72% 45%;
-    --primary-foreground: 0 0% 98%;
-    --primary-glow: 0 100% 50%;
+    /* Emerald primary */
+    --primary: 152 60% 36%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Dark military green secondary */
-    --secondary: 120 15% 20%;
-    --secondary-foreground: 0 0% 95%;
+    /* Warm orange secondary */
+    --secondary: 25 90% 95%;
+    --secondary-foreground: 25 60% 30%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 140 10% 94%;
+    --muted-foreground: 140 5% 45%;
 
-    /* Toxic green accent */
-    --accent: 120 60% 40%;
-    --accent-foreground: 0 0% 10%;
+    --accent: 25 80% 55%;
+    --accent-foreground: 0 0% 100%;
 
-    /* Alert red for danger */
-    --destructive: 0 85% 50%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 18%;
-    --input: 0 0% 12%;
-    --ring: 0 72% 45%;
+    --border: 140 15% 88%;
+    --input: 140 15% 88%;
+    --ring: 152 60% 36%;
 
-    --radius: 0.25rem;
+    --radius: 0.75rem;
 
-    /* HUD elements */
-    --hud-background: 0 0% 5%;
-    --hud-foreground: 120 60% 50%;
-    --hud-danger: 0 100% 50%;
-    --hud-warning: 38 92% 50%;
-    --hud-safe: 120 60% 40%;
-    
-    /* Gradients */
-    --gradient-danger: linear-gradient(135deg, hsl(0 72% 45%), hsl(0 100% 60%));
-    --gradient-toxic: linear-gradient(135deg, hsl(120 60% 30%), hsl(120 80% 50%));
-    --gradient-dark: linear-gradient(180deg, hsl(0 0% 5%), hsl(0 0% 2%));
-    --gradient-blood: radial-gradient(circle, hsl(0 100% 40%), hsl(0 72% 20%));
-    
-    /* Shadows */
-    --shadow-glow: 0 0 20px hsl(var(--primary-glow) / 0.5);
-    --shadow-danger: 0 0 40px hsl(0 100% 50% / 0.3);
-    --shadow-toxic: 0 0 30px hsl(120 80% 50% / 0.4);
-    
-    /* Animations timing */
-    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-
-    /* Game specific */
-    --zombie-primary: 90 30% 25%;
-    --zombie-blood: 0 100% 30%;
-    --safe-zone: 200 100% 50%;
-    --danger-zone: 0 100% 50%;
-    --ammo-color: 38 92% 50%;
-    --health-color: 0 72% 45%;
-    --armor-color: 200 60% 40%;
-  }
-
-  .dark {
-    /* Dark mode is default for this game */
-    --background: 0 0% 5%;
-    --foreground: 0 0% 88%;
-
-    --card: 0 0% 8%;
-    --card-foreground: 0 0% 85%;
-
-    --popover: 0 0% 7%;
-    --popover-foreground: 0 0% 88%;
-
-    --primary: 0 72% 45%;
-    --primary-foreground: 0 0% 98%;
-
-    --secondary: 120 15% 20%;
-    --secondary-foreground: 0 0% 95%;
-
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 60%;
-
-    --accent: 120 60% 40%;
-    --accent-foreground: 0 0% 10%;
-
-    --destructive: 0 85% 50%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 0 0% 18%;
-    --input: 0 0% 12%;
-    --ring: 0 72% 45%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 152 60% 36%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 140 10% 94%;
+    --sidebar-accent-foreground: 240 5.3% 26.1%;
+    --sidebar-border: 140 15% 88%;
+    --sidebar-ring: 152 60% 36%;
   }
 }
 
