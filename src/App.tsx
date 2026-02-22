@@ -14,6 +14,8 @@ import Profile from "./pages/donation/Profile";
 import DonationTracking from "./pages/donation/DonationTracking";
 import Notifications from "./pages/donation/Notifications";
 import Analytics from "./pages/donation/Analytics";
+import AdminDashboard from "./pages/donation/AdminDashboard";
+import Watchlist from "./pages/donation/Watchlist";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +40,8 @@ const App = () => (
           <Route path="/ngos" element={<RoleGuard><NGODirectory /></RoleGuard>} />
           <Route path="/notifications" element={<RoleGuard><Notifications /></RoleGuard>} />
           <Route path="/analytics" element={<RoleGuard><Analytics /></RoleGuard>} />
+          <Route path="/watchlist" element={<RoleGuard><Watchlist /></RoleGuard>} />
+          <Route path="/admin" element={<RoleGuard><AdminDashboard /></RoleGuard>} />
           <Route path="/profile" element={<RoleGuard><Profile /></RoleGuard>} />
           <Route path="/login" element={<Navigate to="/welcome" replace />} />
           <Route path="*" element={<NotFound />} />
