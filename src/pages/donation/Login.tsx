@@ -1,12 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 import { useRole, AppRole } from '@/hooks/useRole';
-import { Heart, Users, HandHeart, Home } from 'lucide-react';
+import { Heart, Users, HandHeart, Home, Shield } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 const roles: { value: AppRole; label: string; icon: typeof Heart; description: string; color: string; borderColor: string; bgColor: string }[] = [
   { value: 'donor', label: 'Donor', icon: Heart, description: 'I want to donate food, clothes, or supplies', color: 'text-emerald-800', borderColor: 'border-emerald-500 bg-emerald-50', bgColor: 'hover:border-emerald-300' },
   { value: 'ngo', label: 'NGO', icon: Users, description: 'I represent an NGO organization', color: 'text-orange-800', borderColor: 'border-orange-500 bg-orange-50', bgColor: 'hover:border-orange-300' },
   { value: 'orphanage_member', label: 'Orphanage Member', icon: Home, description: 'I am part of an orphanage', color: 'text-blue-800', borderColor: 'border-blue-500 bg-blue-50', bgColor: 'hover:border-blue-300' },
+  { value: 'admin', label: 'Admin', icon: Shield, description: 'Platform administrator with full control', color: 'text-red-800', borderColor: 'border-red-500 bg-red-50', bgColor: 'hover:border-red-300' },
 ];
 
 export default function Login() {

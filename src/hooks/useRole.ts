@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export type AppRole = 'donor' | 'ngo' | 'orphanage_member';
+export type AppRole = 'donor' | 'ngo' | 'orphanage_member' | 'admin';
 
 export function useRole() {
   const [role, setRoleState] = useState<AppRole | null>(() => {

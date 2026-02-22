@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useRole } from '@/hooks/useRole';
-import { Heart, Utensils, Stethoscope, MessageCircle, Building2, LogOut, HandHeart, UserCog, BarChart3, Truck, Bell } from 'lucide-react';
+import { Heart, Utensils, Stethoscope, MessageCircle, Building2, LogOut, HandHeart, UserCog, BarChart3, Truck, Bell, Eye, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const navItems = [
@@ -10,15 +10,19 @@ const navItems = [
   { path: '/needs', label: 'Medical & Needs', icon: Stethoscope },
   { path: '/chat', label: 'Donors & Chat', icon: MessageCircle },
   { path: '/ngos', label: 'NGOs', icon: Building2 },
+  { path: '/watchlist', label: 'Watchlist', icon: Eye },
   { path: '/notifications', label: 'Notifications', icon: Bell },
   { path: '/analytics', label: 'Analytics', icon: BarChart3 },
   { path: '/profile', label: 'Profile', icon: UserCog },
 ];
 
+const adminNavItem = { path: '/admin', label: 'Admin', icon: Shield };
+
 export function DonationLayout({ children }: { children: ReactNode }) {
   const { role, clearRole } = useRole();
   const location = useLocation();
   const navigate = useNavigate();
+  const allNavItems = role === 'admin' ? [...navItems, adminNavItem] : navItems;
 
   const handleLeave = () => {
     clearRole();
@@ -38,7 +42,7 @@ export function DonationLayout({ children }: { children: ReactNode }) {
             </span>
           </Link>
           <nav className="flex items-center gap-1">
-            {navItems.map(item => {
+            {allNavItems.map(item => {
               const active = location.pathname === item.path;
               return (
                 <Link key={item.path} to={item.path}>
@@ -84,7 +88,7 @@ export function DonationLayout({ children }: { children: ReactNode }) {
       {/* Mobile bottom nav */}
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-emerald-100 z-50 safe-area-pb">
         <div className="flex justify-around py-2">
-          {navItems.map(item => {
+          {allNavItems.map(item => {
             const active = location.pathname === item.path;
             return (
               <Link key={item.path} to={item.path} className="flex flex-col items-center gap-0.5">
