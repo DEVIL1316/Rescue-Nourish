@@ -84,13 +84,10 @@ export default function Profile() {
                     placeholder="you@example.com"
                     maxLength={255}
                   />
-                </div>
                 <LocationSelect
                   value={form.location}
                   onChange={v => setForm((p: any) => ({ ...p, location: v }))}
                 />
-                  />
-                </div>
               </div>
               <div>
                 <Label>About / Bio</Label>
