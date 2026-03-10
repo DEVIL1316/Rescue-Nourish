@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Building2, MapPin, Phone, Mail, Globe, MessageCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { LocationSelect } from '@/components/donation/LocationSelect';
 import { useNavigate } from 'react-router-dom';
 
 export default function NGODirectory() {
@@ -59,7 +60,7 @@ export default function NGODirectory() {
             <CardContent>
               <form onSubmit={addNGO} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div><Label>NGO Name</Label><Input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} required /></div>
-                <div><Label>Location</Label><Input value={form.location} onChange={e => setForm(p => ({ ...p, location: e.target.value }))} /></div>
+                <LocationSelect value={form.location} onChange={v => setForm(p => ({ ...p, location: v }))} />
                 <div><Label>Email</Label><Input value={form.contact_email} onChange={e => setForm(p => ({ ...p, contact_email: e.target.value }))} type="email" /></div>
                 <div><Label>Phone</Label><Input value={form.contact_phone} onChange={e => setForm(p => ({ ...p, contact_phone: e.target.value }))} /></div>
                 <div><Label>Website</Label><Input value={form.website} onChange={e => setForm(p => ({ ...p, website: e.target.value }))} placeholder="https://" /></div>

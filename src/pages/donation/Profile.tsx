@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useRole } from '@/hooks/useRole';
+import { LocationSelect } from '@/components/donation/LocationSelect';
 import { User, Phone, Mail, MapPin, Save } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
@@ -84,17 +85,10 @@ export default function Profile() {
                     maxLength={255}
                   />
                 </div>
-                <div>
-                  <Label className="flex items-center gap-1">
-                    <MapPin className="h-3 w-3" /> Location
-                  </Label>
-                  <Input
-                    value={form.location}
-                    onChange={e => setForm((p: any) => ({ ...p, location: e.target.value }))}
-                    placeholder="City, State"
-                    maxLength={100}
-                  />
-                </div>
+                <LocationSelect
+                  value={form.location}
+                  onChange={v => setForm((p: any) => ({ ...p, location: v }))}
+                />
               </div>
               <div>
                 <Label>About / Bio</Label>
