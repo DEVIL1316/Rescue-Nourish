@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Building2, MapPin, Phone, Mail, Globe, MessageCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { LocationSelect } from '@/components/donation/LocationSelect';
 import { useNavigate } from 'react-router-dom';
 
 export default function NGODirectory() {
