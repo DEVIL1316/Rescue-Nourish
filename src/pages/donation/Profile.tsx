@@ -85,15 +85,10 @@ export default function Profile() {
                     maxLength={255}
                   />
                 </div>
-                <div>
-                  <Label className="flex items-center gap-1">
-                    <MapPin className="h-3 w-3" /> Location
-                  </Label>
-                  <Input
-                    value={form.location}
-                    onChange={e => setForm((p: any) => ({ ...p, location: e.target.value }))}
-                    placeholder="City, State"
-                    maxLength={100}
+                <LocationSelect
+                  value={form.location}
+                  onChange={v => setForm((p: any) => ({ ...p, location: v }))}
+                />
                   />
                 </div>
               </div>
