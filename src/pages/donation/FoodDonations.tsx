@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Star, MapPin, Phone, Mail, Users, UserCheck, X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { LocationSelect } from '@/components/donation/LocationSelect';
 
 const SAMPLE_ORPHANAGES = [
   { id: 'sample-1', name: 'Sunshine Children\'s Home', location: 'Mumbai, Maharashtra', contact_phone: '+91 22 2345 6789', contact_email: 'info@sunshinechildren.org', description: 'A loving home for abandoned and orphaned children providing education and care.', needs_description: 'School supplies, clothing, nutritious food', number_of_people: 85, created_by: 'system' },
