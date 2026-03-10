@@ -140,7 +140,7 @@ export default function FoodDonations() {
             <CardContent>
               <form onSubmit={addOrphanage} className="space-y-4">
                 <div><Label>Name</Label><Input value={orphanageForm.name} onChange={e => setOrphanageForm(p => ({ ...p, name: e.target.value }))} required /></div>
-                <div><Label>Location</Label><Input value={orphanageForm.location} onChange={e => setOrphanageForm(p => ({ ...p, location: e.target.value }))} /></div>
+                <LocationSelect value={orphanageForm.location} onChange={v => setOrphanageForm(p => ({ ...p, location: v }))} />
                 <div className="grid grid-cols-2 gap-3">
                   <div><Label>Phone</Label><Input value={orphanageForm.contact_phone} onChange={e => setOrphanageForm(p => ({ ...p, contact_phone: e.target.value }))} /></div>
                   <div><Label>Email</Label><Input type="email" value={orphanageForm.contact_email} onChange={e => setOrphanageForm(p => ({ ...p, contact_email: e.target.value }))} /></div>
