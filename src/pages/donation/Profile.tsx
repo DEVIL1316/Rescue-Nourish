@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useRole } from '@/hooks/useRole';
+import { LocationSelect } from '@/components/donation/LocationSelect';
 import { User, Phone, Mail, MapPin, Save } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
