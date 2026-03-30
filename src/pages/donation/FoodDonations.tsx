@@ -72,7 +72,7 @@ export default function FoodDonations() {
     if (error) { toast({ title: 'Error', description: error.message, variant: 'destructive' }); return; }
     toast({ title: 'Donation added! 🎉' });
     setShowAddDonation(false);
-    setDonationForm({ title: '', description: '', food_type: '', quantity: '', quality_rating: 5, image_url: null });
+    setDonationForm({ title: '', description: '', food_type: '', quantity: '', quality_rating: 5, image_url: null as string | null, location: '' });
     fetchData();
   };
 
