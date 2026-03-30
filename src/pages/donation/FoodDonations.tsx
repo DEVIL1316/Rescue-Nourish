@@ -120,6 +120,7 @@ export default function FoodDonations() {
                   <div><Label>Food Type</Label><Input value={donationForm.food_type} onChange={e => setDonationForm(p => ({ ...p, food_type: e.target.value }))} placeholder="e.g. Rice" /></div>
                   <div><Label>Quantity</Label><Input value={donationForm.quantity} onChange={e => setDonationForm(p => ({ ...p, quantity: e.target.value }))} placeholder="e.g. 50 kg" /></div>
                 </div>
+                <LocationSelect value={donationForm.location} onChange={v => setDonationForm(p => ({ ...p, location: v }))} label="Your Location" />
                 <div>
                   <Label>Quality (1-5)</Label>
                   <div className="flex gap-1 mt-1">
@@ -135,6 +136,29 @@ export default function FoodDonations() {
                   onChange={url => setDonationForm(p => ({ ...p, image_url: url }))}
                 />
                 <div><Label>Description</Label><Textarea value={donationForm.description} onChange={e => setDonationForm(p => ({ ...p, description: e.target.value }))} rows={3} /></div>
+
+                {/* Smart Match Suggestions */}
+                {suggestedMatches.length > 0 && (
+                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                    <p className="text-xs font-bold text-purple-800 flex items-center gap-1 mb-2">
+                      <Brain className="h-3.5 w-3.5" /> Smart Match Suggestions
+                    </p>
+                    <div className="space-y-2">
+                      {suggestedMatches.map(m => (
+                        <div key={m.orphanage.id} className="flex items-center justify-between bg-white rounded p-2">
+                          <div>
+                            <p className="text-xs font-semibold text-emerald-800">{m.orphanage.name}</p>
+                            <p className="text-[10px] text-gray-500">{m.orphanage.location}</p>
+                          </div>
+                          <Badge variant={m.score >= 75 ? 'default' : 'secondary'} className="text-[10px]">
+                            <TrendingUp className="h-2.5 w-2.5 mr-0.5" />{m.score}%
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 w-full text-base py-3">Submit Donation</Button>
               </form>
             </CardContent>
