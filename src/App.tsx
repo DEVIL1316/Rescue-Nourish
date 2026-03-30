@@ -16,6 +16,7 @@ import Notifications from "./pages/donation/Notifications";
 import Analytics from "./pages/donation/Analytics";
 import AdminDashboard from "./pages/donation/AdminDashboard";
 import Watchlist from "./pages/donation/Watchlist";
+import SmartMatching from "./pages/donation/SmartMatching";
 
 const queryClient = new QueryClient();
 
