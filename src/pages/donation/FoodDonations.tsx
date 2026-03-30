@@ -28,8 +28,17 @@ export default function FoodDonations() {
   const [orphanages, setOrphanages] = useState<any[]>([]);
   const [showAddDonation, setShowAddDonation] = useState(false);
   const [showAddOrphanage, setShowAddOrphanage] = useState(false);
-  const [donationForm, setDonationForm] = useState({ title: '', description: '', food_type: '', quantity: '', quality_rating: 5, image_url: null as string | null });
+  const [donationForm, setDonationForm] = useState({ title: '', description: '', food_type: '', quantity: '', quality_rating: 5, image_url: null as string | null, location: '' });
   const [orphanageForm, setOrphanageForm] = useState({ name: '', location: '', contact_phone: '', contact_email: '', description: '', needs_description: '', number_of_people: 0 });
+
+  // Smart matching suggestions
+  const suggestedMatches = useMemo(() => {
+    if (!donationForm.food_type && !donationForm.title) return [];
+    return computeMatches(
+      { food_type: donationForm.food_type, title: donationForm.title, donor_location: donationForm.location },
+      orphanages
+    ).slice(0, 3);
+  }, [donationForm.food_type, donationForm.title, donationForm.location, orphanages]);
 
   useEffect(() => {
     fetchData();
