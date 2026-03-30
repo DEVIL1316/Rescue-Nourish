@@ -11,6 +11,7 @@ const navItems = [
   { path: '/chat', label: 'Donors & Chat', icon: MessageCircle },
   { path: '/ngos', label: 'NGOs', icon: Building2 },
   { path: '/watchlist', label: 'Watchlist', icon: Eye },
+  { path: '/smart-matching', label: 'Smart Match', icon: Brain },
   { path: '/notifications', label: 'Notifications', icon: Bell },
   { path: '/analytics', label: 'Analytics', icon: BarChart3 },
   { path: '/profile', label: 'Profile', icon: UserCog },

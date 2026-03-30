@@ -42,6 +42,7 @@ const App = () => (
           <Route path="/notifications" element={<RoleGuard><Notifications /></RoleGuard>} />
           <Route path="/analytics" element={<RoleGuard><Analytics /></RoleGuard>} />
           <Route path="/watchlist" element={<RoleGuard><Watchlist /></RoleGuard>} />
+          <Route path="/smart-matching" element={<RoleGuard><SmartMatching /></RoleGuard>} />
           <Route path="/admin" element={<RoleGuard><AdminDashboard /></RoleGuard>} />
           <Route path="/profile" element={<RoleGuard><Profile /></RoleGuard>} />
           <Route path="/login" element={<Navigate to="/welcome" replace />} />
