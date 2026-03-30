@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { DonationLayout } from '@/components/donation/DonationLayout';
@@ -8,9 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Star, MapPin, Phone, Mail, Users, UserCheck, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Star, MapPin, Phone, Mail, Users, UserCheck, X, Brain, TrendingUp } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { LocationSelect } from '@/components/donation/LocationSelect';
+import { computeMatches, MatchResult } from '@/lib/smartMatching';
 
 const SAMPLE_ORPHANAGES = [
   { id: 'sample-1', name: 'Sunshine Children\'s Home', location: 'Koramangala, Bangalore', contact_phone: '+91 80 2345 6789', contact_email: 'info@sunshinechildren.org', description: 'A loving home for abandoned and orphaned children providing education and care.', needs_description: 'School supplies, clothing, nutritious food', number_of_people: 85, created_by: 'system' },
@@ -26,8 +28,17 @@ export default function FoodDonations() {
   const [orphanages, setOrphanages] = useState<any[]>([]);
   const [showAddDonation, setShowAddDonation] = useState(false);
   const [showAddOrphanage, setShowAddOrphanage] = useState(false);
-  const [donationForm, setDonationForm] = useState({ title: '', description: '', food_type: '', quantity: '', quality_rating: 5, image_url: null as string | null });
+  const [donationForm, setDonationForm] = useState({ title: '', description: '', food_type: '', quantity: '', quality_rating: 5, image_url: null as string | null, location: '' });
   const [orphanageForm, setOrphanageForm] = useState({ name: '', location: '', contact_phone: '', contact_email: '', description: '', needs_description: '', number_of_people: 0 });
+
+  // Smart matching suggestions
+  const suggestedMatches = useMemo(() => {
+    if (!donationForm.food_type && !donationForm.title) return [];
+    return computeMatches(
+      { food_type: donationForm.food_type, title: donationForm.title, donor_location: donationForm.location },
+      orphanages
+    ).slice(0, 3);
+  }, [donationForm.food_type, donationForm.title, donationForm.location, orphanages]);
 
   useEffect(() => {
     fetchData();
@@ -61,7 +72,7 @@ export default function FoodDonations() {
     if (error) { toast({ title: 'Error', description: error.message, variant: 'destructive' }); return; }
     toast({ title: 'Donation added! 🎉' });
     setShowAddDonation(false);
-    setDonationForm({ title: '', description: '', food_type: '', quantity: '', quality_rating: 5, image_url: null });
+    setDonationForm({ title: '', description: '', food_type: '', quantity: '', quality_rating: 5, image_url: null as string | null, location: '' });
     fetchData();
   };
 
@@ -109,6 +120,7 @@ export default function FoodDonations() {
                   <div><Label>Food Type</Label><Input value={donationForm.food_type} onChange={e => setDonationForm(p => ({ ...p, food_type: e.target.value }))} placeholder="e.g. Rice" /></div>
                   <div><Label>Quantity</Label><Input value={donationForm.quantity} onChange={e => setDonationForm(p => ({ ...p, quantity: e.target.value }))} placeholder="e.g. 50 kg" /></div>
                 </div>
+                <LocationSelect value={donationForm.location} onChange={v => setDonationForm(p => ({ ...p, location: v }))} label="Your Location" />
                 <div>
                   <Label>Quality (1-5)</Label>
                   <div className="flex gap-1 mt-1">
@@ -124,6 +136,29 @@ export default function FoodDonations() {
                   onChange={url => setDonationForm(p => ({ ...p, image_url: url }))}
                 />
                 <div><Label>Description</Label><Textarea value={donationForm.description} onChange={e => setDonationForm(p => ({ ...p, description: e.target.value }))} rows={3} /></div>
+
+                {/* Smart Match Suggestions */}
+                {suggestedMatches.length > 0 && (
+                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                    <p className="text-xs font-bold text-purple-800 flex items-center gap-1 mb-2">
+                      <Brain className="h-3.5 w-3.5" /> Smart Match Suggestions
+                    </p>
+                    <div className="space-y-2">
+                      {suggestedMatches.map(m => (
+                        <div key={m.orphanage.id} className="flex items-center justify-between bg-white rounded p-2">
+                          <div>
+                            <p className="text-xs font-semibold text-emerald-800">{m.orphanage.name}</p>
+                            <p className="text-[10px] text-gray-500">{m.orphanage.location}</p>
+                          </div>
+                          <Badge variant={m.score >= 75 ? 'default' : 'secondary'} className="text-[10px]">
+                            <TrendingUp className="h-2.5 w-2.5 mr-0.5" />{m.score}%
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 w-full text-base py-3">Submit Donation</Button>
               </form>
             </CardContent>

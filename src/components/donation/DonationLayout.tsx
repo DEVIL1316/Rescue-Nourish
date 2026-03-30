@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useRole } from '@/hooks/useRole';
-import { Heart, Utensils, Stethoscope, MessageCircle, Building2, LogOut, HandHeart, UserCog, BarChart3, Truck, Bell, Eye, Shield } from 'lucide-react';
+import { Heart, Utensils, Stethoscope, MessageCircle, Building2, LogOut, HandHeart, UserCog, BarChart3, Truck, Bell, Eye, Shield, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const navItems = [
@@ -11,6 +11,7 @@ const navItems = [
   { path: '/chat', label: 'Donors & Chat', icon: MessageCircle },
   { path: '/ngos', label: 'NGOs', icon: Building2 },
   { path: '/watchlist', label: 'Watchlist', icon: Eye },
+  { path: '/smart-matching', label: 'Smart Match', icon: Brain },
   { path: '/notifications', label: 'Notifications', icon: Bell },
   { path: '/analytics', label: 'Analytics', icon: BarChart3 },
   { path: '/profile', label: 'Profile', icon: UserCog },
