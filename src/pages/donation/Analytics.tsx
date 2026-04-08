@@ -3,9 +3,128 @@ import { supabase } from '@/integrations/supabase/client';
 import { DonationLayout } from '@/components/donation/DonationLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
-import { Package, Users, TrendingUp, Heart, Truck, CheckCircle2 } from 'lucide-react';
+import { Package, Users, TrendingUp, Heart, Truck, CheckCircle2, AlertTriangle, ShieldAlert, Activity } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 const PIE_COLORS = ['#059669', '#f59e0b', '#3b82f6', '#ef4444', '#8b5cf6', '#ec4899'];
+
+interface Anomaly {
+  id: string;
+  type: 'spike' | 'duplicate' | 'unusual_time' | 'rapid_fire' | 'quality';
+  severity: 'low' | 'medium' | 'high';
+  message: string;
+  details: string;
+  timestamp: string;
+}
+
+function detectAnomalies(donations: any[]): Anomaly[] {
+  const anomalies: Anomaly[] = [];
+
+  // 1. Detect duplicates (same donor + same title within 1 hour)
+  const grouped: Record<string, any[]> = {};
+  donations.forEach(d => {
+    const key = `${d.donor_id}_${d.title?.toLowerCase().trim()}`;
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(d);
+  });
+  Object.entries(grouped).forEach(([, items]) => {
+    if (items.length > 1) {
+      const sorted = items.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      for (let i = 1; i < sorted.length; i++) {
+        const diff = new Date(sorted[i].created_at).getTime() - new Date(sorted[i - 1].created_at).getTime();
+        if (diff < 3600000) {
+          anomalies.push({
+            id: sorted[i].id,
+            type: 'duplicate',
+            severity: 'high',
+            message: `Duplicate donation: "${sorted[i].title}"`,
+            details: `Same donor submitted identical donation within ${Math.round(diff / 60000)} minutes`,
+            timestamp: sorted[i].created_at,
+          });
+        }
+      }
+    }
+  });
+
+  // 2. Detect unusual hours (midnight to 5 AM)
+  donations.forEach(d => {
+    const hour = new Date(d.created_at).getHours();
+    if (hour >= 0 && hour < 5) {
+      anomalies.push({
+        id: d.id,
+        type: 'unusual_time',
+        severity: 'low',
+        message: `Off-hours donation: "${d.title}"`,
+        details: `Created at ${new Date(d.created_at).toLocaleTimeString()} — unusual activity window`,
+        timestamp: d.created_at,
+      });
+    }
+  });
+
+  // 3. Rapid-fire: same donor > 5 donations in a day
+  const dailyByDonor: Record<string, Record<string, number>> = {};
+  donations.forEach(d => {
+    const day = new Date(d.created_at).toISOString().split('T')[0];
+    if (!dailyByDonor[d.donor_id]) dailyByDonor[d.donor_id] = {};
+    dailyByDonor[d.donor_id][day] = (dailyByDonor[d.donor_id][day] || 0) + 1;
+  });
+  Object.entries(dailyByDonor).forEach(([donorId, days]) => {
+    Object.entries(days).forEach(([day, count]) => {
+      if (count > 5) {
+        anomalies.push({
+          id: `rf_${donorId}_${day}`,
+          type: 'rapid_fire',
+          severity: 'medium',
+          message: `Rapid-fire: ${count} donations in one day`,
+          details: `Donor submitted ${count} donations on ${day} — possible spam or test data`,
+          timestamp: `${day}T00:00:00Z`,
+        });
+      }
+    });
+  });
+
+  // 4. Low quality ratings
+  donations.forEach(d => {
+    if (d.quality_rating !== null && d.quality_rating <= 2) {
+      anomalies.push({
+        id: d.id,
+        type: 'quality',
+        severity: d.quality_rating <= 1 ? 'high' : 'medium',
+        message: `Low quality: "${d.title}" rated ${d.quality_rating}/5`,
+        details: 'This donation has a very low quality rating and may need review',
+        timestamp: d.created_at,
+      });
+    }
+  });
+
+  // 5. Daily spike detection (> 2x average)
+  const dailyCounts: Record<string, number> = {};
+  donations.forEach(d => {
+    const day = new Date(d.created_at).toISOString().split('T')[0];
+    dailyCounts[day] = (dailyCounts[day] || 0) + 1;
+  });
+  const counts = Object.values(dailyCounts);
+  if (counts.length > 2) {
+    const avg = counts.reduce((a, b) => a + b, 0) / counts.length;
+    Object.entries(dailyCounts).forEach(([day, count]) => {
+      if (count > avg * 2 && count > 3) {
+        anomalies.push({
+          id: `spike_${day}`,
+          type: 'spike',
+          severity: 'medium',
+          message: `Spike detected: ${count} donations on ${day}`,
+          details: `Daily average is ${avg.toFixed(1)} — this day had ${((count / avg) * 100).toFixed(0)}% of average`,
+          timestamp: `${day}T00:00:00Z`,
+        });
+      }
+    });
+  }
+
+  return anomalies.sort((a, b) => {
+    const sev = { high: 0, medium: 1, low: 2 };
+    return sev[a.severity] - sev[b.severity];
+  });
+}
 
 export default function Analytics() {
   const [stats, setStats] = useState({
@@ -19,6 +138,7 @@ export default function Analytics() {
   const [foodTypeData, setFoodTypeData] = useState<any[]>([]);
   const [weeklyData, setWeeklyData] = useState<any[]>([]);
   const [needsCategoryData, setNeedsCategoryData] = useState<any[]>([]);
+  const [anomalies, setAnomalies] = useState<Anomaly[]>([]);
 
   useEffect(() => {
     fetchAnalytics();
@@ -35,7 +155,6 @@ export default function Analytics() {
     const orphanages = orphRes.data || [];
     const needs = needsRes.data || [];
 
-    // Stats
     setStats({
       totalDonations: donations.length,
       totalOrphanages: orphanages.length,
@@ -45,7 +164,6 @@ export default function Analytics() {
       pickedUpCount: donations.filter(d => d.tracking_status === 'picked_up').length,
     });
 
-    // Food type breakdown
     const foodTypes: Record<string, number> = {};
     donations.forEach(d => {
       const type = d.food_type || 'Other';
@@ -53,7 +171,6 @@ export default function Analytics() {
     });
     setFoodTypeData(Object.entries(foodTypes).map(([name, value]) => ({ name, value })));
 
-    // Weekly donations (last 7 days)
     const weekly: Record<string, number> = {};
     for (let i = 6; i >= 0; i--) {
       const date = new Date();
@@ -72,12 +189,27 @@ export default function Analytics() {
     });
     setWeeklyData(Object.entries(weekly).map(([day, count]) => ({ day, count })));
 
-    // Needs category breakdown
     const needsCats: Record<string, number> = {};
     needs.forEach(n => {
       needsCats[n.category] = (needsCats[n.category] || 0) + 1;
     });
     setNeedsCategoryData(Object.entries(needsCats).map(([name, value]) => ({ name, value })));
+
+    // Anomaly detection
+    setAnomalies(detectAnomalies(donations));
+  };
+
+  const severityColor = (s: string) => {
+    if (s === 'high') return 'bg-red-100 text-red-700 border-red-200';
+    if (s === 'medium') return 'bg-amber-100 text-amber-700 border-amber-200';
+    return 'bg-blue-100 text-blue-700 border-blue-200';
+  };
+
+  const typeIcon = (t: string) => {
+    if (t === 'duplicate') return <ShieldAlert className="h-4 w-4" />;
+    if (t === 'spike') return <TrendingUp className="h-4 w-4" />;
+    if (t === 'rapid_fire') return <Activity className="h-4 w-4" />;
+    return <AlertTriangle className="h-4 w-4" />;
   };
 
   const statCards = [
@@ -112,9 +244,49 @@ export default function Analytics() {
           ))}
         </div>
 
+        {/* Anomaly Detection */}
+        <Card className="border-red-200 bg-gradient-to-br from-red-50/50 to-amber-50/30">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-emerald-800 text-base flex items-center gap-2">
+                <ShieldAlert className="h-5 w-5 text-red-500" />
+                Anomaly Detection
+              </CardTitle>
+              <Badge variant="outline" className={anomalies.length > 0 ? 'border-red-300 text-red-600' : 'border-emerald-300 text-emerald-600'}>
+                {anomalies.length} {anomalies.length === 1 ? 'anomaly' : 'anomalies'}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {anomalies.length === 0 ? (
+              <div className="text-center py-8">
+                <CheckCircle2 className="h-10 w-10 text-emerald-400 mx-auto mb-2" />
+                <p className="text-emerald-700 font-semibold">All Clear!</p>
+                <p className="text-sm text-gray-500">No anomalies detected in donation patterns</p>
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
+                {anomalies.map((a, i) => (
+                  <div key={`${a.id}_${i}`} className={`flex items-start gap-3 p-3 rounded-lg border ${severityColor(a.severity)}`}>
+                    <div className="mt-0.5">{typeIcon(a.type)}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-semibold text-sm">{a.message}</p>
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 capitalize">
+                          {a.severity}
+                        </Badge>
+                      </div>
+                      <p className="text-xs mt-0.5 opacity-80">{a.details}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Weekly Donations */}
           <Card className="border-emerald-100">
             <CardHeader className="pb-2">
               <CardTitle className="text-emerald-800 text-base">Donations This Week</CardTitle>
@@ -132,7 +304,6 @@ export default function Analytics() {
             </CardContent>
           </Card>
 
-          {/* Food Type Breakdown */}
           <Card className="border-emerald-100">
             <CardHeader className="pb-2">
               <CardTitle className="text-emerald-800 text-base">Food Type Breakdown</CardTitle>
@@ -155,7 +326,6 @@ export default function Analytics() {
             </CardContent>
           </Card>
 
-          {/* Needs by Category */}
           <Card className="border-emerald-100 lg:col-span-2">
             <CardHeader className="pb-2">
               <CardTitle className="text-emerald-800 text-base">Needs by Category</CardTitle>
