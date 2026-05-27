@@ -17,6 +17,7 @@ import Analytics from "./pages/donation/Analytics";
 import AdminDashboard from "./pages/donation/AdminDashboard";
 import Watchlist from "./pages/donation/Watchlist";
 import SmartMatching from "./pages/donation/SmartMatching";
+import Sessions from "./pages/donation/Sessions";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,7 @@ const App = () => (
           <Route path="/smart-matching" element={<RoleGuard><SmartMatching /></RoleGuard>} />
           <Route path="/admin" element={<RoleGuard><AdminDashboard /></RoleGuard>} />
           <Route path="/profile" element={<RoleGuard><Profile /></RoleGuard>} />
+          <Route path="/sessions" element={<RoleGuard><Sessions /></RoleGuard>} />
           <Route path="/login" element={<Navigate to="/welcome" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
