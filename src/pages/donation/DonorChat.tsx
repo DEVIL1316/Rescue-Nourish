@@ -1,180 +1,304 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { useRole, AppRole } from '@/hooks/useRole';
 import { DonationLayout } from '@/components/donation/DonationLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, User, Phone, MessageCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import {
+  Send, MessageCircle, Heart, Users, Home, Globe,
+  HandHeart, HelpCircle, Package,
+} from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
+type Intent = 'request' | 'donate' | 'help';
+
+type ChatMessage = {
+  id: string;
+  channel: string;
+  senderRole: AppRole;
+  senderName: string;
+  intent: Intent;
+  content: string;
+  createdAt: number;
+};
+
+const CHANNELS: { id: string; label: string; icon: typeof Heart; description: string }[] = [
+  { id: 'all',            label: 'Community',         icon: Globe, description: 'Everyone — donors, NGOs & orphanages' },
+  { id: 'donor-ngo',      label: 'Donors ↔ NGOs',     icon: Users, description: 'Coordinate donations with NGOs' },
+  { id: 'donor-orphan',   label: 'Donors ↔ Orphanages', icon: Home, description: 'Talk directly to orphanages' },
+  { id: 'ngo-orphan',     label: 'NGOs ↔ Orphanages', icon: HandHeart, description: 'NGOs supporting orphanages' },
+];
+
+const INTENTS: { id: Intent; label: string; icon: typeof Heart; cls: string }[] = [
+  { id: 'request', label: 'Request',  icon: HelpCircle,  cls: 'bg-amber-100 text-amber-800 border-amber-300' },
+  { id: 'donate',  label: 'Donate',   icon: Package,     cls: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
+  { id: 'help',    label: 'Help',     icon: HandHeart,   cls: 'bg-orange-100 text-orange-800 border-orange-300' },
+];
+
+const roleLabel: Record<AppRole, string> = {
+  donor: 'Donor',
+  ngo: 'NGO',
+  orphanage_member: 'Orphanage',
+  admin: 'Admin',
+};
+
+const roleColor: Record<AppRole, string> = {
+  donor: 'text-emerald-700 bg-emerald-50 border-emerald-200',
+  ngo: 'text-orange-700 bg-orange-50 border-orange-200',
+  orphanage_member: 'text-blue-700 bg-blue-50 border-blue-200',
+  admin: 'text-red-700 bg-red-50 border-red-200',
+};
+
+function channelAllowsRole(channelId: string, role: AppRole): boolean {
+  if (role === 'admin' || channelId === 'all') return true;
+  if (channelId === 'donor-ngo') return role === 'donor' || role === 'ngo';
+  if (channelId === 'donor-orphan') return role === 'donor' || role === 'orphanage_member';
+  if (channelId === 'ngo-orphan') return role === 'ngo' || role === 'orphanage_member';
+  return false;
+}
+
+function storageKey(channel: string) {
+  return `chat_messages_${channel}`;
+}
+
+function loadMessages(channel: string): ChatMessage[] {
+  try {
+    const raw = localStorage.getItem(storageKey(channel));
+    return raw ? (JSON.parse(raw) as ChatMessage[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveMessages(channel: string, msgs: ChatMessage[]) {
+  // keep last 200 per channel
+  const trimmed = msgs.slice(-200);
+  localStorage.setItem(storageKey(channel), JSON.stringify(trimmed));
+}
+
 export default function DonorChat() {
-  const { user } = useAuth();
-  const [profiles, setProfiles] = useState<any[]>([]);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [messages, setMessages] = useState<any[]>([]);
-  const [newMessage, setNewMessage] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    fetchProfiles();
+  const { role } = useRole();
+  const profile = useMemo(() => {
+    try {
+      const raw = localStorage.getItem('user_profile');
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
   }, []);
+  const senderName: string =
+    (profile?.full_name && String(profile.full_name).trim()) ||
+    (role ? `Anonymous ${roleLabel[role]}` : 'Anonymous');
+
+  const myRole: AppRole = role ?? 'donor';
+  const availableChannels = CHANNELS.filter(c => channelAllowsRole(c.id, myRole));
+
+  const [activeChannel, setActiveChannel] = useState<string>(availableChannels[0]?.id ?? 'all');
+  const [messages, setMessages] = useState<ChatMessage[]>(() => loadMessages(activeChannel));
+  const [intent, setIntent] = useState<Intent>(myRole === 'donor' ? 'donate' : 'request');
+  const [draft, setDraft] = useState('');
+  const endRef = useRef<HTMLDivElement>(null);
+
+  // Switch channel: reload from localStorage
+  useEffect(() => {
+    setMessages(loadMessages(activeChannel));
+  }, [activeChannel]);
+
+  // Realtime broadcast subscription per channel
+  useEffect(() => {
+    const channel = supabase.channel(`rescue-chat:${activeChannel}`, {
+      config: { broadcast: { self: false } },
+    });
+
+    channel
+      .on('broadcast', { event: 'message' }, (payload) => {
+        const msg = payload.payload as ChatMessage;
+        if (!msg?.id) return;
+        setMessages(prev => {
+          if (prev.some(m => m.id === msg.id)) return prev;
+          const next = [...prev, msg];
+          saveMessages(activeChannel, next);
+          return next;
+        });
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [activeChannel]);
 
   useEffect(() => {
-    if (selectedUser && user) {
-      fetchMessages();
-      // Realtime subscription
-      const channel = supabase
-        .channel('chat-messages')
-        .on('postgres_changes', {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-        }, (payload) => {
-          const msg = payload.new as any;
-          if (
-            (msg.sender_id === user.id && msg.receiver_id === selectedUser.user_id) ||
-            (msg.sender_id === selectedUser.user_id && msg.receiver_id === user.id)
-          ) {
-            setMessages(prev => [...prev, msg]);
-          }
-        })
-        .subscribe();
-
-      return () => { supabase.removeChannel(channel); };
-    }
-  }, [selectedUser, user]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
-  const fetchProfiles = async () => {
-    const { data } = await supabase.from('profiles').select('*').order('full_name');
-    if (data) setProfiles(data.filter(p => p.user_id !== user?.id));
-  };
-
-  const fetchMessages = async () => {
-    if (!user || !selectedUser) return;
-    const { data } = await supabase
-      .from('messages')
-      .select('*')
-      .or(`and(sender_id.eq.${user.id},receiver_id.eq.${selectedUser.user_id}),and(sender_id.eq.${selectedUser.user_id},receiver_id.eq.${user.id})`)
-      .order('created_at');
-    if (data) setMessages(data);
-  };
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !selectedUser || !newMessage.trim()) return;
-    const { error } = await supabase.from('messages').insert({
-      sender_id: user.id,
-      receiver_id: selectedUser.user_id,
-      content: newMessage.trim(),
+    const text = draft.trim();
+    if (!text) return;
+    if (text.length > 1000) {
+      toast({ title: 'Message too long', description: 'Keep it under 1000 characters.', variant: 'destructive' });
+      return;
+    }
+
+    const msg: ChatMessage = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      channel: activeChannel,
+      senderRole: myRole,
+      senderName,
+      intent,
+      content: text,
+      createdAt: Date.now(),
+    };
+
+    // optimistic local append + persist
+    setMessages(prev => {
+      const next = [...prev, msg];
+      saveMessages(activeChannel, next);
+      return next;
     });
-    if (error) { toast({ title: 'Error', description: error.message, variant: 'destructive' }); return; }
-    setNewMessage('');
+    setDraft('');
+
+    // broadcast to other tabs / users
+    const ch = supabase.channel(`rescue-chat:${activeChannel}`);
+    await ch.subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        await ch.send({ type: 'broadcast', event: 'message', payload: msg });
+        supabase.removeChannel(ch);
+      }
+    });
   };
+
+  const activeChannelMeta = CHANNELS.find(c => c.id === activeChannel)!;
 
   return (
     <DonationLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-black text-emerald-800">Donors & Chat</h1>
-          <p className="text-emerald-600 mt-1">Connect with donors and NGOs directly</p>
+          <h1 className="text-3xl font-black text-emerald-800">Donors, NGOs & Orphanages Chat</h1>
+          <p className="text-emerald-600 mt-1">
+            Request supplies, offer donations, or ask for help — in real time.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-250px)]">
-          {/* Users List */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-260px)]">
+          {/* Channels */}
           <Card className="border-emerald-100 overflow-hidden">
             <CardHeader className="bg-emerald-50 py-3">
-              <CardTitle className="text-sm text-emerald-800">People</CardTitle>
+              <CardTitle className="text-sm text-emerald-800">Channels</CardTitle>
             </CardHeader>
             <CardContent className="p-0 overflow-y-auto max-h-[500px]">
-              {profiles.map(p => (
-                <button
-                  key={p.id}
-                  onClick={() => setSelectedUser(p)}
-                  className={`w-full flex items-center gap-3 p-3 text-left hover:bg-emerald-50 transition-colors border-b border-gray-100 ${
-                    selectedUser?.id === p.id ? 'bg-emerald-50' : ''
-                  }`}
-                >
-                  <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
-                    <User className="h-5 w-5 text-emerald-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-800 text-sm">{p.full_name || 'Anonymous'}</p>
-                    <p className="text-xs text-gray-500 capitalize">{p.role_type}</p>
-                  </div>
-                </button>
-              ))}
-              {profiles.length === 0 && (
-                <p className="p-4 text-sm text-gray-500 text-center">No users found</p>
-              )}
+              {availableChannels.map(c => {
+                const active = c.id === activeChannel;
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => setActiveChannel(c.id)}
+                    className={`w-full flex items-start gap-3 p-3 text-left hover:bg-emerald-50 transition-colors border-b border-gray-100 ${
+                      active ? 'bg-emerald-50' : ''
+                    }`}
+                  >
+                    <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                      <c.icon className="h-5 w-5 text-emerald-600" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-gray-800 text-sm">{c.label}</p>
+                      <p className="text-xs text-gray-500 truncate">{c.description}</p>
+                    </div>
+                  </button>
+                );
+              })}
             </CardContent>
           </Card>
 
-          {/* Chat Area */}
+          {/* Chat area */}
           <Card className="md:col-span-2 border-emerald-100 flex flex-col overflow-hidden">
-            {selectedUser ? (
-              <>
-                <CardHeader className="bg-emerald-50 py-3 flex-row items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
-                      <User className="h-5 w-5 text-emerald-600" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-sm text-emerald-800">{selectedUser.full_name || 'Anonymous'}</CardTitle>
-                      <p className="text-xs text-gray-500 capitalize">{selectedUser.role_type}</p>
-                    </div>
-                  </div>
-                  {selectedUser.phone && (
-                    <a href={`tel:${selectedUser.phone}`}>
-                      <Button size="sm" variant="outline" className="border-emerald-300 text-emerald-700">
-                        <Phone className="h-4 w-4 mr-1" /> Call
-                      </Button>
-                    </a>
-                  )}
-                </CardHeader>
-                <CardContent className="flex-1 overflow-y-auto p-4 space-y-3 max-h-[400px]">
-                  {messages.map(m => (
-                    <div key={m.id} className={`flex ${m.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm ${
-                        m.sender_id === user?.id
+            <CardHeader className="bg-emerald-50 py-3 flex-row items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                  <activeChannelMeta.icon className="h-5 w-5 text-emerald-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-sm text-emerald-800">{activeChannelMeta.label}</CardTitle>
+                  <p className="text-xs text-gray-500">{activeChannelMeta.description}</p>
+                </div>
+              </div>
+              <Badge variant="outline" className={roleColor[myRole]}>
+                You: {roleLabel[myRole]}
+              </Badge>
+            </CardHeader>
+
+            <CardContent className="flex-1 overflow-y-auto p-4 space-y-3 max-h-[420px]">
+              {messages.map(m => {
+                const mine = m.senderName === senderName && m.senderRole === myRole;
+                const intentMeta = INTENTS.find(i => i.id === m.intent)!;
+                return (
+                  <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[80%] ${mine ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className={`px-2 py-0.5 rounded-full border ${roleColor[m.senderRole]}`}>
+                          {roleLabel[m.senderRole]}
+                        </span>
+                        <span className="font-semibold text-gray-700">{m.senderName}</span>
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border ${intentMeta.cls}`}>
+                          <intentMeta.icon className="h-3 w-3" />
+                          {intentMeta.label}
+                        </span>
+                      </div>
+                      <div className={`px-4 py-2 rounded-2xl text-sm ${
+                        mine
                           ? 'bg-emerald-600 text-white rounded-br-md'
                           : 'bg-gray-100 text-gray-800 rounded-bl-md'
                       }`}>
                         {m.content}
                       </div>
+                      <span className="text-[10px] text-gray-400">
+                        {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
                     </div>
-                  ))}
-                  <div ref={messagesEndRef} />
-                  {messages.length === 0 && (
-                    <p className="text-center text-gray-400 text-sm mt-8">Start a conversation!</p>
-                  )}
-                </CardContent>
-                <div className="p-3 border-t border-gray-100">
-                  <form onSubmit={sendMessage} className="flex gap-2">
-                    <Input
-                      value={newMessage}
-                      onChange={e => setNewMessage(e.target.value)}
-                      placeholder="Type a message..."
-                      className="flex-1"
-                    />
-                    <Button type="submit" size="icon" className="bg-emerald-600 hover:bg-emerald-700">
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </form>
+                  </div>
+                );
+              })}
+              <div ref={endRef} />
+              {messages.length === 0 && (
+                <div className="text-center text-gray-400 text-sm mt-12">
+                  <MessageCircle className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                  <p>No messages yet. Start the conversation!</p>
                 </div>
-              </>
-            ) : (
-              <CardContent className="flex-1 flex items-center justify-center">
-                <div className="text-center text-gray-400">
-                  <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p>Select a person to start chatting</p>
-                </div>
-              </CardContent>
-            )}
+              )}
+            </CardContent>
+
+            <div className="p-3 border-t border-gray-100 space-y-2">
+              <div className="flex gap-2 flex-wrap">
+                {INTENTS.map(i => (
+                  <button
+                    key={i.id}
+                    type="button"
+                    onClick={() => setIntent(i.id)}
+                    className={`inline-flex items-center gap-1 px-3 py-1 rounded-full border text-xs font-medium transition ${
+                      intent === i.id ? i.cls + ' ring-2 ring-offset-1 ring-emerald-400' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    <i.icon className="h-3 w-3" />
+                    {i.label}
+                  </button>
+                ))}
+              </div>
+              <form onSubmit={sendMessage} className="flex gap-2">
+                <Input
+                  value={draft}
+                  onChange={e => setDraft(e.target.value)}
+                  placeholder={
+                    intent === 'request' ? 'Describe what you need…' :
+                    intent === 'donate'  ? 'Describe what you can donate…' :
+                                           'Ask for help or coordination…'
+                  }
+                  maxLength={1000}
+                  className="flex-1"
+                />
+                <Button type="submit" size="icon" className="bg-emerald-600 hover:bg-emerald-700">
+                  <Send className="h-4 w-4" />
+                </Button>
+              </form>
+            </div>
           </Card>
         </div>
       </div>
