@@ -19,10 +19,9 @@ export default function Login() {
   const [searchParams] = useSearchParams();
   const [showQR, setShowQR] = useState(false);
   const [selectedQRRole, setSelectedQRRole] = useState<AppRole>('donor');
-
-  // Auto-login via QR scan or new-tab session: ?role=donor[&session=new]
-  useEffect(() => {
-    const roleParam = searchParams.get('role') as AppRole | null;
+  const [showQR, setShowQR] = useState(false);
+  const [selectedQRRole, setSelectedQRRole] = useState<AppRole>('donor');
+  const [qrNewSession, setQrNewSession] = useState(false);
     const sessionMode = searchParams.get('session');
     if (roleParam && roles.some(r => r.value === roleParam)) {
       setRole(roleParam, sessionMode === 'new' ? 'tab' : 'persistent');
