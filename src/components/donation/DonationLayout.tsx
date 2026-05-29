@@ -1,34 +1,68 @@
 import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useRole } from '@/hooks/useRole';
-import { Heart, Utensils, Stethoscope, MessageCircle, Building2, LogOut, HandHeart, UserCog, BarChart3, Truck, Bell, Eye, Shield, Brain } from 'lucide-react';
+import { useLanguage, LANGUAGES, Language } from '@/contexts/LanguageContext';
+import { Heart, Utensils, Stethoscope, MessageCircle, Building2, LogOut, HandHeart, UserCog, BarChart3, Truck, Bell, Eye, Shield, Brain, Languages } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-const navItems = [
-  { path: '/', label: 'Food & Donations', icon: Utensils },
-  { path: '/tracking', label: 'Tracking', icon: Truck },
-  { path: '/needs', label: 'Medical & Needs', icon: Stethoscope },
-  { path: '/chat', label: 'Donors & Chat', icon: MessageCircle },
-  { path: '/ngos', label: 'NGOs', icon: Building2 },
-  { path: '/watchlist', label: 'Watchlist', icon: Eye },
-  { path: '/smart-matching', label: 'Smart Match', icon: Brain },
-  { path: '/notifications', label: 'Notifications', icon: Bell },
-  { path: '/analytics', label: 'Analytics', icon: BarChart3 },
-  { path: '/profile', label: 'Profile', icon: UserCog },
-];
-
-const adminNavItem = { path: '/admin', label: 'Admin', icon: Shield };
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export function DonationLayout({ children }: { children: ReactNode }) {
   const { role, clearRole } = useRole();
+  const { language, setLanguage, t } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
+
+  const navItems = [
+    { path: '/', label: t('nav.food'), icon: Utensils },
+    { path: '/tracking', label: t('nav.tracking'), icon: Truck },
+    { path: '/needs', label: t('nav.needs'), icon: Stethoscope },
+    { path: '/chat', label: t('nav.chat'), icon: MessageCircle },
+    { path: '/ngos', label: t('nav.ngos'), icon: Building2 },
+    { path: '/watchlist', label: t('nav.watchlist'), icon: Eye },
+    { path: '/smart-matching', label: t('nav.smart'), icon: Brain },
+    { path: '/notifications', label: t('nav.notifications'), icon: Bell },
+    { path: '/analytics', label: t('nav.analytics'), icon: BarChart3 },
+    { path: '/profile', label: t('nav.profile'), icon: UserCog },
+  ];
+  const adminNavItem = { path: '/admin', label: t('nav.admin'), icon: Shield };
   const allNavItems = role === 'admin' ? [...navItems, adminNavItem] : navItems;
 
   const handleLeave = () => {
     clearRole();
     navigate('/welcome');
   };
+
+  const currentLang = LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
+
+  const LanguageMenu = () => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="text-emerald-700 hover:bg-emerald-50 px-2">
+          <Languages className="h-4 w-4" />
+          <span className="ml-1 hidden md:inline">{currentLang.native}</span>
+          <span className="ml-1 md:hidden">{currentLang.flag}</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="bg-white">
+        {LANGUAGES.map(lang => (
+          <DropdownMenuItem
+            key={lang.code}
+            onClick={() => setLanguage(lang.code as Language)}
+            className={language === lang.code ? 'bg-emerald-50 font-semibold' : ''}
+          >
+            <span className="mr-2">{lang.flag}</span>
+            {lang.native}
+            <span className="ml-2 text-xs text-gray-400">{lang.label}</span>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-orange-50 pb-20 sm:pb-0">
@@ -39,7 +73,7 @@ export function DonationLayout({ children }: { children: ReactNode }) {
             <Heart className="h-7 w-7 text-emerald-600 fill-emerald-600" />
             <HandHeart className="h-7 w-7 text-orange-500" />
             <span className="text-xl font-black text-emerald-800 tracking-tight">
-              Rescue & Nourish
+              {t('app.title')}
             </span>
           </Link>
           <nav className="flex items-center gap-1">
@@ -60,12 +94,13 @@ export function DonationLayout({ children }: { children: ReactNode }) {
             })}
           </nav>
           <div className="flex items-center gap-2">
+            <LanguageMenu />
             <span className="text-xs font-semibold text-emerald-600 capitalize">
               {role?.replace('_', ' ')}
             </span>
             <Button variant="ghost" size="sm" onClick={handleLeave} className="text-red-500 hover:bg-red-50">
               <LogOut className="h-4 w-4" />
-              <span className="ml-1">Switch Role</span>
+              <span className="ml-1">{t('action.switchRole')}</span>
             </Button>
           </div>
         </div>
@@ -77,9 +112,12 @@ export function DonationLayout({ children }: { children: ReactNode }) {
           <Heart className="h-6 w-6 text-emerald-600 fill-emerald-600" />
           <span className="text-lg font-black text-emerald-800">R&N</span>
         </div>
-        <Button variant="ghost" size="sm" onClick={handleLeave} className="text-red-500 hover:bg-red-50 px-2">
-          <LogOut className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <LanguageMenu />
+          <Button variant="ghost" size="sm" onClick={handleLeave} className="text-red-500 hover:bg-red-50 px-2">
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-4 sm:py-6">
