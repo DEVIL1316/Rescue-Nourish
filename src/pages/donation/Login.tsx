@@ -125,7 +125,7 @@ export default function Login() {
                     value={`${origin}/welcome?role=${selectedQRRole}${qrNewSession ? '&session=new' : ''}`}
                     size={220}
                     level="H"
-                    includeMargin
+                    marginSize={4}
                     fgColor="#065f46"
                   />
                   <p className="text-xs text-gray-500 mt-3 text-center break-all">
