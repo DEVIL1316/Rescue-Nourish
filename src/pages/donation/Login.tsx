@@ -19,6 +19,7 @@ export default function Login() {
   const [searchParams] = useSearchParams();
   const [showQR, setShowQR] = useState(false);
   const [selectedQRRole, setSelectedQRRole] = useState<AppRole>('donor');
+  const [qrNewSession, setQrNewSession] = useState(false);
 
   // Auto-login via QR scan or new-tab session: ?role=donor[&session=new]
   useEffect(() => {
@@ -109,20 +110,30 @@ export default function Login() {
                     </button>
                   ))}
                 </div>
+                <label className="flex items-center gap-2 text-sm text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg p-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={qrNewSession}
+                    onChange={(e) => setQrNewSession(e.target.checked)}
+                    className="accent-emerald-600"
+                  />
+                  Open as a new independent session (keeps existing tabs logged in)
+                </label>
 
                 <div className="flex flex-col items-center bg-white p-6 rounded-xl border-2 border-emerald-100">
                   <QRCodeSVG
-                    value={`${origin}/login?role=${selectedQRRole}`}
+                    value={`${origin}/welcome?role=${selectedQRRole}${qrNewSession ? '&session=new' : ''}`}
                     size={220}
                     level="H"
                     includeMargin
                     fgColor="#065f46"
                   />
                   <p className="text-xs text-gray-500 mt-3 text-center break-all">
-                    {origin}/login?role={selectedQRRole}
+                    {origin}/welcome?role={selectedQRRole}{qrNewSession ? '&session=new' : ''}
                   </p>
                   <p className="text-sm text-emerald-700 mt-2 font-medium">
                     Scan to login as <span className="capitalize">{selectedQRRole.replace('_', ' ')}</span>
+                    {qrNewSession && ' (new session)'}
                   </p>
                 </div>
 
