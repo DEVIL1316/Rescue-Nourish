@@ -36,7 +36,10 @@ export default function Login() {
     navigate('/');
   };
 
-  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  // Always use the published app URL for QR codes so scans skip Lovable's preview login wall.
+  const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+  const isPreview = currentOrigin.includes('lovable.app') && currentOrigin.includes('id-preview');
+  const origin = isPreview ? 'https://zombie-web-survival.lovable.app' : currentOrigin;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-orange-50 to-amber-50 flex items-center justify-center p-4">
