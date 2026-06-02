@@ -1,25 +1,8 @@
 import type { AppRole } from '@/hooks/useRole';
 
-const PUBLISHED_APP_URL = 'https://zombie-web-survival.lovable.app';
-
-function isPreviewHost(hostname: string) {
-  return hostname.includes('id-preview--') || hostname.includes('lovable.app');
-}
-
 export function getQrLoginBaseUrl() {
-  if (typeof window === 'undefined') return PUBLISHED_APP_URL;
-
-  const { origin, hostname } = window.location;
-
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return origin;
-  }
-
-  if (isPreviewHost(hostname) && PUBLISHED_APP_URL) {
-    return PUBLISHED_APP_URL;
-  }
-
-  return origin;
+  if (typeof window === 'undefined') return 'https://zombie-web-survival.lovable.app';
+  return window.location.origin;
 }
 
 export function buildQrLoginUrl(role: AppRole, newSession = false) {
@@ -28,6 +11,20 @@ export function buildQrLoginUrl(role: AppRole, newSession = false) {
 
   if (newSession) {
     url.searchParams.set('session', 'new');
+  }
+
+  if (typeof window !== 'undefined') {
+    const currentParams = new URLSearchParams(window.location.search);
+    const previewToken = currentParams.get('__lovable_token');
+    const previewSha = currentParams.get('__lovable_sha');
+
+    if (previewToken) {
+      url.searchParams.set('__lovable_token', previewToken);
+    }
+
+    if (previewSha) {
+      url.searchParams.set('__lovable_sha', previewSha);
+    }
   }
 
   return url.toString();
