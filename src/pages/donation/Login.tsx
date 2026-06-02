@@ -5,6 +5,7 @@ import { Heart, Users, HandHeart, Home, Shield, QrCode } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { QRCodeSVG } from 'qrcode.react';
+import { buildQrLoginUrl } from '@/lib/qrLogin';
 
 const roles: { value: AppRole; label: string; icon: typeof Heart; description: string; color: string; bgColor: string }[] = [
   { value: 'donor', label: 'Donor', icon: Heart, description: 'I want to donate food, clothes, or supplies', color: 'text-emerald-800', bgColor: 'hover:border-emerald-300' },
@@ -20,6 +21,7 @@ export default function Login() {
   const [showQR, setShowQR] = useState(false);
   const [selectedQRRole, setSelectedQRRole] = useState<AppRole>('donor');
   const [qrNewSession, setQrNewSession] = useState(false);
+  const qrLoginUrl = buildQrLoginUrl(selectedQRRole, qrNewSession);
 
   // Auto-login via QR scan or new-tab session: ?role=donor[&session=new]
   useEffect(() => {
@@ -35,8 +37,6 @@ export default function Login() {
     setRole(role);
     navigate('/');
   };
-
-  const origin = typeof window !== 'undefined' ? window.location.origin : '';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-orange-50 to-amber-50 flex items-center justify-center p-4">
@@ -122,14 +122,15 @@ export default function Login() {
 
                 <div className="flex flex-col items-center bg-white p-6 rounded-xl border-2 border-emerald-100">
                   <QRCodeSVG
-                    value={`${origin}/welcome?role=${selectedQRRole}${qrNewSession ? '&session=new' : ''}`}
+                    key={qrLoginUrl}
+                    value={qrLoginUrl}
                     size={220}
                     level="H"
                     marginSize={4}
                     fgColor="#065f46"
                   />
                   <p className="text-xs text-gray-500 mt-3 text-center break-all">
-                    {origin}/welcome?role={selectedQRRole}{qrNewSession ? '&session=new' : ''}
+                    {qrLoginUrl}
                   </p>
                   <p className="text-sm text-emerald-700 mt-2 font-medium">
                     Scan to login as <span className="capitalize">{selectedQRRole.replace('_', ' ')}</span>
