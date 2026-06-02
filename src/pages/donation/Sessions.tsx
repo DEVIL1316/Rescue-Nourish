@@ -3,6 +3,7 @@ import { Heart, Users, Home, Shield, ExternalLink, ArrowLeft, Plus } from 'lucid
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useRole, AppRole } from '@/hooks/useRole';
+import { buildQrLoginUrl } from '@/lib/qrLogin';
 
 const roles: { value: AppRole; label: string; icon: typeof Heart; color: string }[] = [
   { value: 'donor', label: 'Donor', icon: Heart, color: 'text-emerald-700' },
@@ -16,7 +17,7 @@ export default function Sessions() {
   const { role } = useRole();
 
   const openInNewTab = (r: AppRole) => {
-    const url = `${window.location.origin}/welcome?role=${r}&session=new`;
+    const url = buildQrLoginUrl(r, true);
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
