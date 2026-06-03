@@ -68,7 +68,7 @@ export default function NGODirectory() {
 
         {showAdd && (
           <Card className="border-emerald-200 bg-emerald-50/50">
-            <CardHeader><CardTitle asChild><h2 className="text-2xl font-semibold leading-none tracking-tight text-emerald-800">Register Your NGO</h2></CardTitle></CardHeader>
+            <CardHeader><h2 className="text-2xl font-semibold leading-none tracking-tight text-emerald-800">Register Your NGO</h2></CardHeader>
             <CardContent>
               <form onSubmit={addNGO} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div><Label>NGO Name</Label><Input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} required /></div>

@@ -95,7 +95,7 @@ export default function MedicalNeeds() {
         {/* Add Form */}
         {showAdd && (
           <Card className="border-emerald-200 bg-emerald-50/50">
-            <CardHeader><CardTitle asChild><h2 className="text-2xl font-semibold leading-none tracking-tight text-emerald-800">Post a New Need</h2></CardTitle></CardHeader>
+            <CardHeader><h2 className="text-2xl font-semibold leading-none tracking-tight text-emerald-800">Post a New Need</h2></CardHeader>
             <CardContent>
               <form onSubmit={addNeed} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div><Label>Title</Label><Input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} required /></div>
