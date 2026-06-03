@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { DonationLayout } from '@/components/donation/DonationLayout';
+import { SEO } from '@/components/SEO';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,6 +44,17 @@ export default function NGODirectory() {
 
   return (
     <DonationLayout>
+      <SEO
+        title="NGO Directory — Rescue & Nourish"
+        description="Find and contact verified NGOs working with orphanages across Bangalore. Coordinate pickups and deliveries directly."
+        path="/ngos"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": "NGO Directory",
+          "description": "Directory of NGOs registered on Rescue & Nourish.",
+        }}
+      />
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -56,7 +68,7 @@ export default function NGODirectory() {
 
         {showAdd && (
           <Card className="border-emerald-200 bg-emerald-50/50">
-            <CardHeader><CardTitle className="text-emerald-800">Register Your NGO</CardTitle></CardHeader>
+            <CardHeader><CardTitle asChild><h2 className="text-2xl font-semibold leading-none tracking-tight text-emerald-800">Register Your NGO</h2></CardTitle></CardHeader>
             <CardContent>
               <form onSubmit={addNGO} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div><Label>NGO Name</Label><Input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} required /></div>

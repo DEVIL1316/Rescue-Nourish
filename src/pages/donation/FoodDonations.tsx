@@ -13,6 +13,7 @@ import { Plus, Star, MapPin, Phone, Mail, Users, UserCheck, X, Brain, TrendingUp
 import { toast } from '@/hooks/use-toast';
 import { LocationSelect } from '@/components/donation/LocationSelect';
 import { computeMatches, MatchResult } from '@/lib/smartMatching';
+import { SEO } from '@/components/SEO';
 
 const SAMPLE_ORPHANAGES = [
   { id: 'sample-1', name: 'Sunshine Children\'s Home', location: 'Koramangala, Bangalore', contact_phone: '+91 80 2345 6789', contact_email: 'info@sunshinechildren.org', description: 'A loving home for abandoned and orphaned children providing education and care.', needs_description: 'School supplies, clothing, nutritious food', number_of_people: 85, created_by: 'system' },
@@ -89,6 +90,17 @@ export default function FoodDonations() {
 
   return (
     <DonationLayout>
+      <SEO
+        title="Food Donations — Rescue & Nourish"
+        description="Browse available food donations and orphanages in Bangalore. List your surplus food to feed children in need."
+        path="/"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": "Food Donations",
+          "description": "Collection of available food donations from donors across Bangalore.",
+        }}
+      />
       <div className="space-y-6">
         {/* Header */}
         <div>
@@ -111,7 +123,7 @@ export default function FoodDonations() {
           <Card className="border-emerald-200 bg-emerald-50/50">
             <CardHeader className="pb-3 flex flex-row items-center justify-between">
               <CardTitle className="text-emerald-800">New Donation</CardTitle>
-              <button onClick={() => setShowAddDonation(false)}><X className="h-5 w-5 text-gray-400" /></button>
+              <button type="button" aria-label="Close new donation form" onClick={() => setShowAddDonation(false)}><X className="h-5 w-5 text-gray-400" /></button>
             </CardHeader>
             <CardContent>
               <form onSubmit={addDonation} className="space-y-4">
@@ -125,7 +137,7 @@ export default function FoodDonations() {
                   <Label>Quality (1-5)</Label>
                   <div className="flex gap-1 mt-1">
                     {[1, 2, 3, 4, 5].map(n => (
-                      <button key={n} type="button" onClick={() => setDonationForm(p => ({ ...p, quality_rating: n }))}>
+                      <button key={n} type="button" aria-label={`Rate quality ${n} of 5`} aria-pressed={n <= donationForm.quality_rating} onClick={() => setDonationForm(p => ({ ...p, quality_rating: n }))}>
                         <Star className={`h-7 w-7 ${n <= donationForm.quality_rating ? 'text-amber-500 fill-amber-500' : 'text-gray-300'}`} />
                       </button>
                     ))}
@@ -170,7 +182,7 @@ export default function FoodDonations() {
           <Card className="border-orange-200 bg-orange-50/50">
             <CardHeader className="pb-3 flex flex-row items-center justify-between">
               <CardTitle className="text-orange-800">Add Orphanage</CardTitle>
-              <button onClick={() => setShowAddOrphanage(false)}><X className="h-5 w-5 text-gray-400" /></button>
+              <button type="button" aria-label="Close add orphanage form" onClick={() => setShowAddOrphanage(false)}><X className="h-5 w-5 text-gray-400" /></button>
             </CardHeader>
             <CardContent>
               <form onSubmit={addOrphanage} className="space-y-4">

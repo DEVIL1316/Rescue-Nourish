@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { DonationLayout } from '@/components/donation/DonationLayout';
+import { SEO } from '@/components/SEO';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,6 +53,11 @@ export default function MedicalNeeds() {
 
   return (
     <DonationLayout>
+      <SEO
+        title="Medical & Supply Needs — Rescue & Nourish"
+        description="Orphanage needs across Bangalore: medical supplies, clothing, education, and more. Help by donating what's most urgent."
+        path="/needs"
+      />
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -89,7 +95,7 @@ export default function MedicalNeeds() {
         {/* Add Form */}
         {showAdd && (
           <Card className="border-emerald-200 bg-emerald-50/50">
-            <CardHeader><CardTitle className="text-emerald-800">Post a New Need</CardTitle></CardHeader>
+            <CardHeader><CardTitle asChild><h2 className="text-2xl font-semibold leading-none tracking-tight text-emerald-800">Post a New Need</h2></CardTitle></CardHeader>
             <CardContent>
               <form onSubmit={addNeed} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div><Label>Title</Label><Input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} required /></div>
