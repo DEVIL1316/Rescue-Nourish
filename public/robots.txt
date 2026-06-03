@@ -12,3 +12,5 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+Sitemap: https://zombie-web-survival.lovable.app/sitemap.xml

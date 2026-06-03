@@ -1,0 +1,20 @@
+# Rescue & Nourish
+
+> Food donation platform connecting donors, NGOs, and orphanages in Bangalore to reduce waste and feed children in need.
+
+Rescue & Nourish lets donors list surplus food, NGOs coordinate pickups, and orphanages register their needs. Built-in smart matching pairs donations to the closest orphanage by location, needs, and capacity.
+
+## Pages
+
+- [Welcome](/welcome): Choose your role — Donor, NGO, Orphanage, or Admin.
+- [Food Donations](/): Browse food donations and orphanages.
+- [Medical & Requirements](/needs): Medical supplies, clothing, and other needs posted by orphanages.
+- [NGO Directory](/ngos): Find and contact registered NGOs.
+- [Donation Tracking](/tracking): Track donation status from pickup to delivery.
+- [Smart Matching](/smart-matching): Auto-suggested donor↔orphanage pairings.
+- [Analytics](/analytics): Impact metrics for the platform.
+
+## Optional
+
+- [Watchlist](/watchlist): Subscribe to food categories.
+- [Notifications](/notifications): Realtime alerts.
