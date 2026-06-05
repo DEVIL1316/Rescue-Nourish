@@ -49,27 +49,23 @@ export default function Login() {
   return (
     <div
       className="min-h-screen flex items-center justify-center p-6"
-      style={{
-        ...bodyFont,
-        background:
-          'radial-gradient(ellipse at top right, #ecfdf5 0%, #ffffff 45%, rgba(254,243,199,0.4) 100%)',
-      }}
+      style={{ ...bodyFont, background: '#f5f0e0' }}
     >
-      <div className="max-w-3xl w-full flex flex-col items-center">
+      <div className="max-w-4xl w-full flex flex-col items-center">
         {/* Branding */}
-        <div className="text-center mb-10">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-200 rotate-3">
-              <Heart className="w-7 h-7 text-white fill-white" />
+        <div className="flex flex-col items-center mb-10 text-center">
+          <div className="flex -space-x-2 mb-4">
+            <div className="w-12 h-12 rounded-2xl bg-[#0d7a5f] flex items-center justify-center shadow-lg -rotate-6">
+              <Heart className="w-6 h-6 text-white fill-white" />
             </div>
-            <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-100 -rotate-6 -ml-3">
+            <div className="w-12 h-12 rounded-2xl bg-[#c9a84c] flex items-center justify-center shadow-lg rotate-6">
               <HandHeart className="w-6 h-6 text-white" />
             </div>
           </div>
-          <h1 style={headingFont} className="text-4xl font-bold text-emerald-950 tracking-tight">
+          <h1 style={headingFont} className="text-4xl font-bold text-[#064e3b] mb-1 tracking-tight">
             Rescue & Nourish
           </h1>
-          <p className="text-emerald-700/70 mt-2 font-medium italic">
+          <p className="text-[#0d7a5f] italic text-sm font-medium">
             Connecting donors, NGOs &amp; orphanages
           </p>
         </div>
@@ -77,83 +73,83 @@ export default function Login() {
         {!showQR ? (
           <>
             {/* Bento Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-4 w-full mb-8">
+            <div className="grid grid-cols-12 gap-5 w-full mb-12">
               {/* Donor — large */}
               <button
                 onClick={() => handleSelect('donor')}
-                className="md:col-span-4 group relative overflow-hidden p-8 rounded-3xl bg-white border border-emerald-100 shadow-sm hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-300 text-left"
+                className="col-span-12 md:col-span-8 group relative overflow-hidden p-8 rounded-[2rem] bg-white border border-[#0d7a5f]/10 shadow-sm hover:shadow-md transition-all text-left"
               >
-                <div className="flex items-start justify-between relative z-10">
-                  <div className="space-y-3">
-                    <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
+                <div className="flex justify-between items-start relative z-10">
+                  <div>
+                    <div className="w-12 h-12 rounded-xl bg-[#0d7a5f]/5 flex items-center justify-center text-[#0d7a5f] mb-6 group-hover:bg-[#0d7a5f] group-hover:text-white transition-colors">
                       <Heart className="w-6 h-6" />
                     </div>
-                    <div>
-                      <h3 style={headingFont} className="text-xl font-bold text-emerald-950">
-                        Donor
-                      </h3>
-                      <p className="text-emerald-700/70 mt-1">
-                        I want to donate food, clothes, or essential supplies
-                      </p>
-                    </div>
+                    <h3 style={headingFont} className="text-2xl font-bold text-[#064e3b] mb-2">
+                      Donor
+                    </h3>
+                    <p className="text-[#0d7a5f] max-w-xs leading-relaxed">
+                      I want to donate food, clothes, or essential supplies to those in need.
+                    </p>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-emerald-200 group-hover:translate-x-1 group-hover:text-emerald-500 transition-all" />
+                  <span className="text-xs font-bold uppercase tracking-widest text-[#c9a84c] bg-[#c9a84c]/10 px-3 py-1 rounded-full whitespace-nowrap">
+                    Give today
+                  </span>
                 </div>
-                <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-emerald-50/60 rounded-full group-hover:scale-110 transition-transform duration-500" />
+                <div className="absolute bottom-0 right-0 w-32 h-32 bg-[#0d7a5f]/5 rounded-tl-full -mr-8 -mb-8 transition-transform group-hover:scale-110" />
               </button>
 
-              {/* NGO — amber accent */}
+              {/* NGO — cream tinted */}
               <button
                 onClick={() => handleSelect('ngo')}
-                className="md:col-span-2 group relative overflow-hidden p-8 rounded-3xl bg-amber-50 border border-amber-100 shadow-sm hover:shadow-xl hover:shadow-amber-500/10 transition-all duration-300 text-left"
+                className="col-span-12 md:col-span-4 group p-8 rounded-[2rem] bg-[#fdfaf3] border border-[#c9a84c]/20 shadow-sm hover:border-[#c9a84c]/40 transition-all text-left"
               >
-                <div className="flex flex-col h-full justify-between">
-                  <div className="w-12 h-12 bg-amber-200/60 rounded-xl flex items-center justify-center text-amber-700 mb-4">
-                    <Users className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 style={headingFont} className="text-xl font-bold text-amber-950">
-                      NGO
-                    </h3>
-                    <p className="text-amber-800/70 mt-1 text-sm">I represent an organization</p>
-                  </div>
+                <div className="w-12 h-12 rounded-xl bg-[#c9a84c]/10 flex items-center justify-center text-[#c9a84c] mb-6 group-hover:bg-[#c9a84c] group-hover:text-white transition-colors">
+                  <Users className="w-6 h-6" />
                 </div>
+                <h3 style={headingFont} className="text-2xl font-bold text-[#064e3b] mb-2">
+                  NGO
+                </h3>
+                <p className="text-[#0d7a5f]/80 text-sm leading-relaxed">
+                  I represent an organization coordinating aid and distribution.
+                </p>
               </button>
 
-              {/* Orphanage — dark feature */}
+              {/* Orphanage — dark contrast */}
               <button
                 onClick={() => handleSelect('orphanage_member')}
-                className="md:col-span-3 group relative overflow-hidden p-8 rounded-3xl bg-emerald-950 border border-emerald-900 shadow-lg hover:shadow-emerald-900/30 transition-all duration-300 text-left text-white"
+                className="col-span-12 md:col-span-6 group p-8 rounded-[2rem] bg-[#064e3b] shadow-xl hover:shadow-[#064e3b]/20 transition-all text-left"
               >
                 <div className="flex items-center gap-6">
-                  <div className="w-14 h-14 shrink-0 bg-emerald-800 rounded-2xl flex items-center justify-center group-hover:bg-emerald-700 transition-colors">
-                    <Home className="w-7 h-7" />
+                  <div className="w-16 h-16 rounded-2xl bg-[#0d7a5f] flex items-center justify-center text-white shrink-0 group-hover:bg-white group-hover:text-[#064e3b] transition-colors">
+                    <Home className="w-8 h-8" />
                   </div>
                   <div>
-                    <h3 style={headingFont} className="text-xl font-bold">
+                    <h3 style={headingFont} className="text-xl font-bold text-white mb-1">
                       Orphanage Member
                     </h3>
-                    <p className="text-emerald-200/70 mt-0.5 text-sm">
-                      Manage your center's needs
+                    <p className="text-white/70 text-sm">
+                      Manage your center's needs and track active incoming aid.
                     </p>
                   </div>
                 </div>
               </button>
 
-              {/* Admin */}
+              {/* Admin — utility */}
               <button
                 onClick={() => handleSelect('admin')}
-                className="md:col-span-3 group relative overflow-hidden p-8 rounded-3xl bg-white border border-emerald-100 shadow-sm hover:shadow-xl transition-all duration-300 text-left"
+                className="col-span-12 md:col-span-6 group p-8 rounded-[2rem] bg-white border border-[#0d7a5f]/10 shadow-sm hover:shadow-md transition-all text-left"
               >
                 <div className="flex items-center gap-6">
-                  <div className="w-14 h-14 shrink-0 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-emerald-600 group-hover:bg-emerald-50 transition-colors">
-                    <Shield className="w-7 h-7" />
+                  <div className="w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 shrink-0 group-hover:bg-[#064e3b]/5 group-hover:text-[#064e3b] transition-colors">
+                    <Shield className="w-8 h-8" />
                   </div>
                   <div>
-                    <h3 style={headingFont} className="text-xl font-bold text-emerald-950">
+                    <h3 style={headingFont} className="text-xl font-bold text-[#064e3b] mb-1">
                       Admin
                     </h3>
-                    <p className="text-emerald-700/70 mt-0.5 text-sm">Full platform control</p>
+                    <p className="text-[#0d7a5f]/70 text-sm">
+                      Full platform control and ecosystem oversight.
+                    </p>
                   </div>
                 </div>
               </button>
@@ -162,12 +158,13 @@ export default function Login() {
             {/* QR Login CTA */}
             <button
               onClick={() => setShowQR(true)}
-              className="w-full max-w-sm group flex items-center justify-center gap-3 py-4 px-8 bg-white border-2 border-dashed border-emerald-200 rounded-2xl text-emerald-800 hover:border-emerald-500 hover:bg-emerald-50/50 transition-all cursor-pointer"
+              className="group flex items-center gap-3 px-8 py-4 rounded-2xl border-2 border-dashed border-[#0d7a5f]/30 text-[#0d7a5f] font-semibold hover:border-[#0d7a5f] hover:bg-[#0d7a5f]/5 transition-all"
             >
-              <QrCode className="w-6 h-6 text-emerald-600 group-hover:scale-110 transition-transform" />
-              <span className="font-semibold">Login with QR Code</span>
+              <QrCode className="w-6 h-6 group-hover:scale-110 transition-transform" />
+              <span>Login with QR Code</span>
             </button>
           </>
+
         ) : (
           <div className="w-full max-w-md bg-white border border-emerald-100 rounded-3xl shadow-xl p-8">
             <div className="text-center mb-6">
