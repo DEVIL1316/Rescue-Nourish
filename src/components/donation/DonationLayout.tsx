@@ -35,7 +35,9 @@ export function DonationLayout({ children }: { children: ReactNode }) {
       ? [...navItems, adminNavItem]
       : role === 'donor'
         ? navItems.filter(item => item.path !== '/analytics')
-        : navItems;
+        : role === 'orphanage_member'
+          ? navItems.filter(item => !['/watchlist', '/analytics', '/smart-matching'].includes(item.path))
+          : navItems;
 
   const handleLeave = () => {
     clearRole();
