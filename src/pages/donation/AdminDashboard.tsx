@@ -232,6 +232,30 @@ export default function AdminDashboard() {
               </Card>
             ))}
           </TabsContent>
+
+          <TabsContent value="requests" className="space-y-3">
+            {requests.length === 0 && (
+              <p className="text-sm text-gray-500 text-center py-6">No requests yet.</p>
+            )}
+            {requests.map(r => (
+              <Card key={r.id} className="border-gray-100">
+                <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-emerald-800">{r.title}</p>
+                    <p className="text-xs text-gray-500">
+                      {r.category} • {r.urgency} • {r.status}{r.quantity ? ` • ${r.quantity}` : ''}
+                    </p>
+                    {r.description && (
+                      <p className="text-xs text-gray-600 mt-1">{r.description}</p>
+                    )}
+                  </div>
+                  <Button size="sm" variant="destructive" onClick={() => deleteRequest(r.id)}>
+                    <Trash2 className="h-4 w-4 mr-1" /> Delete
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </TabsContent>
         </Tabs>
       </div>
     </DonationLayout>
