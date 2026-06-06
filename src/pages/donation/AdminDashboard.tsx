@@ -90,6 +90,16 @@ export default function AdminDashboard() {
     fetchAll();
   };
 
+  const deleteRequest = async (id: string) => {
+    const { error } = await supabase.from('needs').delete().eq('id', id);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Request deleted' });
+    fetchAll();
+  };
+
   const filteredUsers = users.filter(u =>
     u.full_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
