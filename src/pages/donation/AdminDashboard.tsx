@@ -16,6 +16,7 @@ export default function AdminDashboard() {
   const [donations, setDonations] = useState<any[]>([]);
   const [ngos, setNgos] = useState<any[]>([]);
   const [orphanages, setOrphanages] = useState<any[]>([]);
+  const [requests, setRequests] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [stats, setStats] = useState({ users: 0, donations: 0, ngos: 0, orphanages: 0 });
 
@@ -24,17 +25,19 @@ export default function AdminDashboard() {
   }, []);
 
   const fetchAll = async () => {
-    const [profilesRes, donationsRes, ngosRes, orphanagesRes] = await Promise.all([
+    const [profilesRes, donationsRes, ngosRes, orphanagesRes, needsRes] = await Promise.all([
       supabase.from('profiles').select('*, user_roles(role)'),
       supabase.from('donations').select('*').order('created_at', { ascending: false }),
       supabase.from('ngos').select('*').order('created_at', { ascending: false }),
       supabase.from('orphanages').select('*').order('created_at', { ascending: false }),
+      supabase.from('needs').select('*').order('created_at', { ascending: false }),
     ]);
 
     if (profilesRes.data) setUsers(profilesRes.data);
     if (donationsRes.data) setDonations(donationsRes.data);
     if (ngosRes.data) setNgos(ngosRes.data);
     if (orphanagesRes.data) setOrphanages(orphanagesRes.data);
+    if (needsRes.data) setRequests(needsRes.data);
 
     setStats({
       users: profilesRes.data?.length || 0,
@@ -87,6 +90,16 @@ export default function AdminDashboard() {
     fetchAll();
   };
 
+  const deleteRequest = async (id: string) => {
+    const { error } = await supabase.from('needs').delete().eq('id', id);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Request deleted' });
+    fetchAll();
+  };
+
   const filteredUsers = users.filter(u =>
     u.full_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -130,6 +143,7 @@ export default function AdminDashboard() {
             <TabsTrigger value="donations">Donations</TabsTrigger>
             <TabsTrigger value="ngos">NGOs</TabsTrigger>
             <TabsTrigger value="orphanages">Orphanages</TabsTrigger>
+            <TabsTrigger value="requests">Requests</TabsTrigger>
           </TabsList>
 
           <TabsContent value="users" className="space-y-3">
@@ -212,6 +226,30 @@ export default function AdminDashboard() {
                     <p className="text-xs text-gray-500">{o.location || 'No location'} • {o.number_of_people || 0} people</p>
                   </div>
                   <Button size="sm" variant="destructive" onClick={() => deleteOrphanage(o.id)}>
+                    <Trash2 className="h-4 w-4 mr-1" /> Delete
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </TabsContent>
+
+          <TabsContent value="requests" className="space-y-3">
+            {requests.length === 0 && (
+              <p className="text-sm text-gray-500 text-center py-6">No requests yet.</p>
+            )}
+            {requests.map(r => (
+              <Card key={r.id} className="border-gray-100">
+                <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-emerald-800">{r.title}</p>
+                    <p className="text-xs text-gray-500">
+                      {r.category} • {r.urgency} • {r.status}{r.quantity ? ` • ${r.quantity}` : ''}
+                    </p>
+                    {r.description && (
+                      <p className="text-xs text-gray-600 mt-1">{r.description}</p>
+                    )}
+                  </div>
+                  <Button size="sm" variant="destructive" onClick={() => deleteRequest(r.id)}>
                     <Trash2 className="h-4 w-4 mr-1" /> Delete
                   </Button>
                 </CardContent>
