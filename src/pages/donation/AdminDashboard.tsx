@@ -143,6 +143,7 @@ export default function AdminDashboard() {
             <TabsTrigger value="donations">Donations</TabsTrigger>
             <TabsTrigger value="ngos">NGOs</TabsTrigger>
             <TabsTrigger value="orphanages">Orphanages</TabsTrigger>
+            <TabsTrigger value="requests">Requests</TabsTrigger>
           </TabsList>
 
           <TabsContent value="users" className="space-y-3">
