@@ -30,7 +30,12 @@ export function DonationLayout({ children }: { children: ReactNode }) {
     { path: '/profile', label: t('nav.profile'), icon: UserCog },
   ];
   const adminNavItem = { path: '/admin', label: t('nav.admin'), icon: Shield };
-  const allNavItems = role === 'admin' ? [...navItems, adminNavItem] : navItems;
+  const allNavItems =
+    role === 'admin'
+      ? [...navItems, adminNavItem]
+      : role === 'donor'
+        ? navItems.filter(item => item.path !== '/analytics')
+        : navItems;
 
   const handleLeave = () => {
     clearRole();
