@@ -25,17 +25,19 @@ export default function AdminDashboard() {
   }, []);
 
   const fetchAll = async () => {
-    const [profilesRes, donationsRes, ngosRes, orphanagesRes] = await Promise.all([
+    const [profilesRes, donationsRes, ngosRes, orphanagesRes, needsRes] = await Promise.all([
       supabase.from('profiles').select('*, user_roles(role)'),
       supabase.from('donations').select('*').order('created_at', { ascending: false }),
       supabase.from('ngos').select('*').order('created_at', { ascending: false }),
       supabase.from('orphanages').select('*').order('created_at', { ascending: false }),
+      supabase.from('needs').select('*').order('created_at', { ascending: false }),
     ]);
 
     if (profilesRes.data) setUsers(profilesRes.data);
     if (donationsRes.data) setDonations(donationsRes.data);
     if (ngosRes.data) setNgos(ngosRes.data);
     if (orphanagesRes.data) setOrphanages(orphanagesRes.data);
+    if (needsRes.data) setRequests(needsRes.data);
 
     setStats({
       users: profilesRes.data?.length || 0,
