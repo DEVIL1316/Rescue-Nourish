@@ -16,6 +16,7 @@ export default function AdminDashboard() {
   const [donations, setDonations] = useState<any[]>([]);
   const [ngos, setNgos] = useState<any[]>([]);
   const [orphanages, setOrphanages] = useState<any[]>([]);
+  const [requests, setRequests] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [stats, setStats] = useState({ users: 0, donations: 0, ngos: 0, orphanages: 0 });
 
