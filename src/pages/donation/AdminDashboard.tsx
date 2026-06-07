@@ -44,7 +44,7 @@ export default function AdminDashboard() {
         return {
           ...n,
           poster_name: profile?.full_name || 'Unknown',
-          poster_role: profile?.user_roles?.[0]?.role || profile?.role_type || 'unknown',
+          poster_role: (Array.isArray(profile?.user_roles) ? profile?.user_roles?.[0]?.role : (profile?.user_roles as any)?.role) || profile?.role_type || 'unknown',
           poster_phone: profile?.phone || null,
         };
       });
