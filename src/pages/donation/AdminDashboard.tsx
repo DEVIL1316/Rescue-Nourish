@@ -37,7 +37,19 @@ export default function AdminDashboard() {
     if (donationsRes.data) setDonations(donationsRes.data);
     if (ngosRes.data) setNgos(ngosRes.data);
     if (orphanagesRes.data) setOrphanages(orphanagesRes.data);
-    if (needsRes.data) setRequests(needsRes.data);
+
+    if (needsRes.data) {
+      const enriched = needsRes.data.map((n: any) => {
+        const profile = profilesRes.data?.find((p: any) => p.user_id === n.posted_by);
+        return {
+          ...n,
+          poster_name: profile?.full_name || 'Unknown',
+          poster_role: (Array.isArray(profile?.user_roles) ? profile?.user_roles?.[0]?.role : (profile?.user_roles as any)?.role) || profile?.role_type || 'unknown',
+          poster_phone: profile?.phone || null,
+        };
+      });
+      setRequests(enriched);
+    }
 
     setStats({
       users: profilesRes.data?.length || 0,
@@ -237,24 +249,61 @@ export default function AdminDashboard() {
             {requests.length === 0 && (
               <p className="text-sm text-gray-500 text-center py-6">No requests yet.</p>
             )}
-            {requests.map(r => (
-              <Card key={r.id} className="border-gray-100">
-                <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <p className="font-semibold text-emerald-800">{r.title}</p>
-                    <p className="text-xs text-gray-500">
-                      {r.category} • {r.urgency} • {r.status}{r.quantity ? ` • ${r.quantity}` : ''}
-                    </p>
-                    {r.description && (
-                      <p className="text-xs text-gray-600 mt-1">{r.description}</p>
-                    )}
-                  </div>
-                  <Button size="sm" variant="destructive" onClick={() => deleteRequest(r.id)}>
-                    <Trash2 className="h-4 w-4 mr-1" /> Delete
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+            {requests.map(r => {
+              const urgencyColor =
+                r.urgency === 'high' ? 'bg-red-100 text-red-700' :
+                r.urgency === 'medium' ? 'bg-amber-100 text-amber-700' :
+                'bg-emerald-100 text-emerald-700';
+              const roleColor =
+                r.poster_role === 'ngo' ? 'bg-purple-100 text-purple-700' :
+                r.poster_role === 'orphanage_member' ? 'bg-orange-100 text-orange-700' :
+                r.poster_role === 'donor' ? 'bg-blue-100 text-blue-700' :
+                'bg-gray-100 text-gray-700';
+              return (
+                <Card key={r.id} className="border-gray-100">
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                      <div className="flex-1 space-y-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-semibold text-emerald-800">{r.title}</p>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase ${urgencyColor}`}>
+                            {r.urgency}
+                          </span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-gray-100 text-gray-700 uppercase">
+                            {r.status}
+                          </span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-emerald-50 text-emerald-700 uppercase">
+                            {r.category}
+                          </span>
+                        </div>
+                        {r.description && (
+                          <p className="text-xs text-gray-700">{r.description}</p>
+                        )}
+                        {r.quantity && (
+                          <p className="text-xs text-gray-500">Quantity: <span className="font-medium text-gray-700">{r.quantity}</span></p>
+                        )}
+                        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-100">
+                          <span className="text-xs text-gray-500">From:</span>
+                          <span className="text-xs font-semibold text-emerald-800">{r.poster_name}</span>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase ${roleColor}`}>
+                            {r.poster_role}
+                          </span>
+                          {r.poster_phone && (
+                            <span className="text-xs text-gray-500">• {r.poster_phone}</span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-gray-400">
+                          Posted: {new Date(r.created_at).toLocaleString()}
+                        </p>
+                      </div>
+                      <Button size="sm" variant="destructive" onClick={() => deleteRequest(r.id)}>
+                        <Trash2 className="h-4 w-4 mr-1" /> Delete
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </TabsContent>
         </Tabs>
       </div>
