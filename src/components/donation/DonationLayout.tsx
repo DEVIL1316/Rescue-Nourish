@@ -30,7 +30,7 @@ export function DonationLayout({ children }: { children: ReactNode }) {
     { path: '/profile', label: t('nav.profile'), icon: UserCog },
   ];
   const adminNavItem = { path: '/admin', label: t('nav.admin'), icon: Shield };
-  const adminHiddenPaths = ['/', '/needs', '/ngos', '/watchlist', '/smart-matching'];
+  const adminHiddenPaths = ['/', '/needs', '/watchlist', '/smart-matching'];
   const allNavItems =
     role === 'admin'
       ? [...navItems.filter(item => !adminHiddenPaths.includes(item.path)), adminNavItem]
