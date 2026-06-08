@@ -16,7 +16,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { Plus, Building2, MapPin, Phone, Mail, Globe, MessageCircle, CalendarDays, CheckCircle2, Info } from 'lucide-react';
+import { Plus, Building2, MapPin, Phone, Mail, Globe, MessageCircle, CalendarDays, CheckCircle2, Info, Copy, ExternalLink } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { LocationSelect } from '@/components/donation/LocationSelect';
 import { useNavigate } from 'react-router-dom';
