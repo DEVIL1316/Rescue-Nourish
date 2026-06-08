@@ -53,6 +53,18 @@ export default function NGODirectory() {
     navigate('/chat');
   };
 
+  const copyContactInfo = (ngo: any) => {
+    const lines = [];
+    if (ngo.name) lines.push(`Name: ${ngo.name}`);
+    if (ngo.location) lines.push(`Location: ${ngo.location}`);
+    if (ngo.contact_phone) lines.push(`Phone: ${ngo.contact_phone}`);
+    if (ngo.contact_email) lines.push(`Email: ${ngo.contact_email}`);
+    if (ngo.website) lines.push(`Website: ${ngo.website}`);
+    const text = lines.join('\n');
+    navigator.clipboard.writeText(text || 'No contact information available.');
+    toast({ title: 'Contact info copied to clipboard!' });
+  };
+
   const openDetails = async (ngo: any) => {
     setSelectedNgo(ngo);
     setLoadingDetails(true);
