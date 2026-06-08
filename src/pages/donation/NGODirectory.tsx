@@ -204,6 +204,26 @@ export default function NGODirectory() {
                       <p className="text-gray-500 italic">No contact details provided.</p>
                     )}
                   </div>
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {selectedNgo.contact_phone && (
+                      <Button size="sm" variant="outline" className="border-emerald-300 text-emerald-700 hover:bg-emerald-50" asChild>
+                        <a href={`tel:${selectedNgo.contact_phone}`}><Phone className="h-3.5 w-3.5 mr-1" /> Call</a>
+                      </Button>
+                    )}
+                    {selectedNgo.contact_email && (
+                      <Button size="sm" variant="outline" className="border-emerald-300 text-emerald-700 hover:bg-emerald-50" asChild>
+                        <a href={`mailto:${selectedNgo.contact_email}`}><Mail className="h-3.5 w-3.5 mr-1" /> Email</a>
+                      </Button>
+                    )}
+                    {selectedNgo.website && (
+                      <Button size="sm" variant="outline" className="border-emerald-300 text-emerald-700 hover:bg-emerald-50" asChild>
+                        <a href={selectedNgo.website} target="_blank" rel="noreferrer"><ExternalLink className="h-3.5 w-3.5 mr-1" /> Visit</a>
+                      </Button>
+                    )}
+                    <Button size="sm" variant="outline" className="border-emerald-300 text-emerald-700 hover:bg-emerald-50" onClick={() => copyContactInfo(selectedNgo)}>
+                      <Copy className="h-3.5 w-3.5 mr-1" /> Copy Info
+                    </Button>
+                  </div>
                 </div>
 
                 {selectedNgo.description && (
