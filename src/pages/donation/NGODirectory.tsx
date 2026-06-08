@@ -16,7 +16,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { Plus, Building2, MapPin, Phone, Mail, Globe, MessageCircle, CalendarDays, CheckCircle2, Info } from 'lucide-react';
+import { Plus, Building2, MapPin, Phone, Mail, Globe, MessageCircle, CalendarDays, CheckCircle2, Info, Copy, ExternalLink } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { LocationSelect } from '@/components/donation/LocationSelect';
 import { useNavigate } from 'react-router-dom';
@@ -51,6 +51,18 @@ export default function NGODirectory() {
 
   const contactNGO = (_ngoUserId: string) => {
     navigate('/chat');
+  };
+
+  const copyContactInfo = (ngo: any) => {
+    const lines = [];
+    if (ngo.name) lines.push(`Name: ${ngo.name}`);
+    if (ngo.location) lines.push(`Location: ${ngo.location}`);
+    if (ngo.contact_phone) lines.push(`Phone: ${ngo.contact_phone}`);
+    if (ngo.contact_email) lines.push(`Email: ${ngo.contact_email}`);
+    if (ngo.website) lines.push(`Website: ${ngo.website}`);
+    const text = lines.join('\n');
+    navigator.clipboard.writeText(text || 'No contact information available.');
+    toast({ title: 'Contact info copied to clipboard!' });
   };
 
   const openDetails = async (ngo: any) => {
@@ -191,6 +203,26 @@ export default function NGODirectory() {
                     {!selectedNgo.location && !selectedNgo.contact_phone && !selectedNgo.contact_email && !selectedNgo.website && (
                       <p className="text-gray-500 italic">No contact details provided.</p>
                     )}
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {selectedNgo.contact_phone && (
+                      <Button size="sm" variant="outline" className="border-emerald-300 text-emerald-700 hover:bg-emerald-50" asChild>
+                        <a href={`tel:${selectedNgo.contact_phone}`}><Phone className="h-3.5 w-3.5 mr-1" /> Call</a>
+                      </Button>
+                    )}
+                    {selectedNgo.contact_email && (
+                      <Button size="sm" variant="outline" className="border-emerald-300 text-emerald-700 hover:bg-emerald-50" asChild>
+                        <a href={`mailto:${selectedNgo.contact_email}`}><Mail className="h-3.5 w-3.5 mr-1" /> Email</a>
+                      </Button>
+                    )}
+                    {selectedNgo.website && (
+                      <Button size="sm" variant="outline" className="border-emerald-300 text-emerald-700 hover:bg-emerald-50" asChild>
+                        <a href={selectedNgo.website} target="_blank" rel="noreferrer"><ExternalLink className="h-3.5 w-3.5 mr-1" /> Visit</a>
+                      </Button>
+                    )}
+                    <Button size="sm" variant="outline" className="border-emerald-300 text-emerald-700 hover:bg-emerald-50" onClick={() => copyContactInfo(selectedNgo)}>
+                      <Copy className="h-3.5 w-3.5 mr-1" /> Copy Info
+                    </Button>
                   </div>
                 </div>
 
