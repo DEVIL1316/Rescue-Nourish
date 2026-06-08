@@ -3,12 +3,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { DonationLayout } from '@/components/donation/DonationLayout';
 import { SEO } from '@/components/SEO';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Building2, MapPin, Phone, Mail, Globe, MessageCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import { Plus, Building2, MapPin, Phone, Mail, Globe, MessageCircle, CalendarDays, CheckCircle2, Info } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { LocationSelect } from '@/components/donation/LocationSelect';
 import { useNavigate } from 'react-router-dom';
@@ -19,6 +27,9 @@ export default function NGODirectory() {
   const [ngos, setNgos] = useState<any[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ name: '', description: '', contact_email: '', contact_phone: '', location: '', website: '' });
+  const [selectedNgo, setSelectedNgo] = useState<any | null>(null);
+  const [relatedNeeds, setRelatedNeeds] = useState<any[]>([]);
+  const [loadingDetails, setLoadingDetails] = useState(false);
 
   useEffect(() => { fetchNGOs(); }, []);
 
@@ -38,9 +49,26 @@ export default function NGODirectory() {
     fetchNGOs();
   };
 
-  const contactNGO = (ngoUserId: string) => {
-    navigate('/donate/chat');
+  const contactNGO = (_ngoUserId: string) => {
+    navigate('/chat');
   };
+
+  const openDetails = async (ngo: any) => {
+    setSelectedNgo(ngo);
+    setLoadingDetails(true);
+    setRelatedNeeds([]);
+    const { data } = await supabase
+      .from('needs')
+      .select('*')
+      .eq('posted_by', ngo.user_id)
+      .order('created_at', { ascending: false })
+      .limit(8);
+    setRelatedNeeds(data || []);
+    setLoadingDetails(false);
+  };
+
+  const urgencyColor = (u: string) =>
+    u === 'high' ? 'bg-red-100 text-red-700' : u === 'low' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700';
 
   return (
     <DonationLayout>
@@ -101,14 +129,15 @@ export default function NGODirectory() {
                       {n.contact_phone && <p className="text-sm text-gray-600 flex items-center gap-1"><Phone className="h-3 w-3" /> {n.contact_phone}</p>}
                       {n.contact_email && <p className="text-sm text-gray-600 flex items-center gap-1"><Mail className="h-3 w-3" /> {n.contact_email}</p>}
                       {n.website && <p className="text-sm text-emerald-600 flex items-center gap-1"><Globe className="h-3 w-3" /> <a href={n.website} target="_blank" rel="noreferrer" className="hover:underline">{n.website}</a></p>}
-                      {n.description && <p className="text-sm text-gray-500 mt-3">{n.description}</p>}
-                      <Button
-                        size="sm"
-                        className="mt-4 bg-emerald-600 hover:bg-emerald-700"
-                        onClick={() => contactNGO(n.user_id)}
-                      >
-                        <MessageCircle className="h-4 w-4 mr-1" /> Contact NGO
-                      </Button>
+                      {n.description && <p className="text-sm text-gray-500 mt-3 line-clamp-2">{n.description}</p>}
+                      <div className="flex flex-wrap gap-2 mt-4">
+                        <Button size="sm" variant="outline" className="border-emerald-300 text-emerald-700 hover:bg-emerald-50" onClick={() => openDetails(n)}>
+                          <Info className="h-4 w-4 mr-1" /> View Details
+                        </Button>
+                        <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={() => contactNGO(n.user_id)}>
+                          <MessageCircle className="h-4 w-4 mr-1" /> Contact NGO
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -117,6 +146,100 @@ export default function NGODirectory() {
           </div>
         )}
       </div>
+
+      <Sheet open={!!selectedNgo} onOpenChange={(open) => !open && setSelectedNgo(null)}>
+        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+          {selectedNgo && (
+            <>
+              <SheetHeader>
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-xl bg-emerald-100 flex items-center justify-center">
+                    <Building2 className="h-6 w-6 text-emerald-600" />
+                  </div>
+                  <div>
+                    <SheetTitle className="text-emerald-800">{selectedNgo.name}</SheetTitle>
+                    <SheetDescription>
+                      By {selectedNgo.profiles?.full_name || 'Anonymous'}
+                    </SheetDescription>
+                  </div>
+                </div>
+              </SheetHeader>
+
+              <div className="mt-6 space-y-5">
+                <div className="flex flex-wrap gap-2">
+                  <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                    <CheckCircle2 className="h-3 w-3 mr-1" /> Active
+                  </Badge>
+                  <Badge variant="outline" className="border-emerald-200 text-emerald-700">
+                    <CalendarDays className="h-3 w-3 mr-1" />
+                    Registered {new Date(selectedNgo.created_at).toLocaleDateString()}
+                  </Badge>
+                </div>
+
+                <div className="space-y-2">
+                  <h4 className="text-sm font-semibold text-emerald-800">Contact Information</h4>
+                  <div className="rounded-lg border border-emerald-100 bg-emerald-50/40 p-3 space-y-2 text-sm">
+                    {selectedNgo.location && <p className="flex items-center gap-2 text-gray-700"><MapPin className="h-4 w-4 text-emerald-600" /> {selectedNgo.location}</p>}
+                    {selectedNgo.contact_phone && <p className="flex items-center gap-2 text-gray-700"><Phone className="h-4 w-4 text-emerald-600" /> {selectedNgo.contact_phone}</p>}
+                    {selectedNgo.contact_email && <p className="flex items-center gap-2 text-gray-700"><Mail className="h-4 w-4 text-emerald-600" /> {selectedNgo.contact_email}</p>}
+                    {selectedNgo.website && (
+                      <p className="flex items-center gap-2 text-emerald-700">
+                        <Globe className="h-4 w-4" />
+                        <a href={selectedNgo.website} target="_blank" rel="noreferrer" className="hover:underline truncate">{selectedNgo.website}</a>
+                      </p>
+                    )}
+                    {!selectedNgo.location && !selectedNgo.contact_phone && !selectedNgo.contact_email && !selectedNgo.website && (
+                      <p className="text-gray-500 italic">No contact details provided.</p>
+                    )}
+                  </div>
+                </div>
+
+                {selectedNgo.description && (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-semibold text-emerald-800">About</h4>
+                    <p className="text-sm text-gray-600 whitespace-pre-line">{selectedNgo.description}</p>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-semibold text-emerald-800">Recent Related Requests</h4>
+                    {!loadingDetails && <span className="text-xs text-gray-500">{relatedNeeds.length} total</span>}
+                  </div>
+                  {loadingDetails ? (
+                    <p className="text-sm text-gray-500">Loading…</p>
+                  ) : relatedNeeds.length === 0 ? (
+                    <div className="rounded-lg border border-dashed border-emerald-200 p-4 text-center text-sm text-emerald-600">
+                      No requests posted by this NGO yet.
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {relatedNeeds.map(req => (
+                        <div key={req.id} className="rounded-lg border border-emerald-100 p-3 bg-white">
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="font-semibold text-sm text-emerald-800">{req.title}</p>
+                            <Badge className={`text-[10px] ${urgencyColor(req.urgency)} hover:opacity-100`}>{req.urgency}</Badge>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5 mt-1">
+                            <Badge variant="outline" className="text-[10px] border-emerald-200 text-emerald-700">{req.category}</Badge>
+                            <Badge variant="outline" className="text-[10px] border-gray-200 text-gray-600">{req.status}</Badge>
+                          </div>
+                          {req.description && <p className="text-xs text-gray-600 mt-2 line-clamp-2">{req.description}</p>}
+                          <p className="text-[10px] text-gray-400 mt-2">{new Date(req.created_at).toLocaleString()}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <Button className="w-full bg-emerald-600 hover:bg-emerald-700" onClick={() => contactNGO(selectedNgo.user_id)}>
+                  <MessageCircle className="h-4 w-4 mr-1" /> Contact NGO
+                </Button>
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
     </DonationLayout>
   );
 }
