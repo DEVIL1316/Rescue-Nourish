@@ -357,6 +357,41 @@ export type Database = {
         }
         Returns: boolean
       }
+      mcp_list_ngos: {
+        Args: { _limit?: number }
+        Returns: {
+          created_at: string
+          description: string
+          id: string
+          location: string
+          name: string
+          website: string
+        }[]
+      }
+      mcp_list_open_needs: {
+        Args: { _limit?: number }
+        Returns: {
+          category: string
+          created_at: string
+          description: string
+          id: string
+          quantity: string
+          status: string
+          title: string
+          urgency: string
+        }[]
+      }
+      mcp_list_orphanages: {
+        Args: { _limit?: number }
+        Returns: {
+          created_at: string
+          description: string
+          id: string
+          location: string
+          name: string
+          needs_description: string
+        }[]
+      }
     }
     Enums: {
       app_role: "donor" | "ngo" | "admin" | "orphanage_member"
