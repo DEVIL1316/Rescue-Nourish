@@ -291,9 +291,18 @@ export default function AdminDashboard() {
                     <p className="font-semibold text-emerald-800">{o.name}</p>
                     <p className="text-xs text-gray-500">{o.location || 'No location'} • {o.number_of_people || 0} people</p>
                   </div>
-                  <Button size="sm" variant="destructive" onClick={() => deleteOrphanage(o.id)}>
-                    <Trash2 className="h-4 w-4 mr-1" /> Delete
-                  </Button>
+                  <ConfirmDestructive
+                    title="Delete this orphanage?"
+                    itemLabel={o.name}
+                    requireTyping
+                    description="Its capacity details and posted needs will be removed from matching and the directory. This cannot be undone."
+                    onConfirm={() => deleteOrphanage(o.id)}
+                    trigger={
+                      <Button size="sm" variant="destructive">
+                        <Trash2 className="h-4 w-4 mr-1" /> Delete
+                      </Button>
+                    }
+                  />
                 </CardContent>
               </Card>
             ))}
