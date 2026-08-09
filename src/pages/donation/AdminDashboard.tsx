@@ -30,6 +30,11 @@ export default function AdminDashboard() {
   const [requests, setRequests] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [stats, setStats] = useState({ users: 0, donations: 0, ngos: 0, orphanages: 0 });
+  const [pendingRole, setPendingRole] = useState<
+    { userId: string; role: string; name: string; previous: string } | null
+  >(null);
+  const [roleSaving, setRoleSaving] = useState(false);
+  const [roleSelectKey, setRoleSelectKey] = useState(0);
 
   useEffect(() => {
     fetchAll();
