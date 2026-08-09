@@ -359,9 +359,17 @@ export default function AdminDashboard() {
                           Posted: {new Date(r.created_at).toLocaleString()}
                         </p>
                       </div>
-                      <Button size="sm" variant="destructive" onClick={() => deleteRequest(r.id)}>
-                        <Trash2 className="h-4 w-4 mr-1" /> Delete
-                      </Button>
+                      <ConfirmDestructive
+                        title="Delete this request?"
+                        itemLabel={r.title}
+                        description={`Posted by ${r.poster_name}. Deleting removes it from open needs and matching. This cannot be undone.`}
+                        onConfirm={() => deleteRequest(r.id)}
+                        trigger={
+                          <Button size="sm" variant="destructive">
+                            <Trash2 className="h-4 w-4 mr-1" /> Delete
+                          </Button>
+                        }
+                      />
                     </div>
                   </CardContent>
                 </Card>
@@ -369,6 +377,33 @@ export default function AdminDashboard() {
             })}
           </TabsContent>
         </Tabs>
+
+        {/* Role change safeguard */}
+        <AlertDialog open={!!pendingRole} onOpenChange={(o) => { if (!o && !roleSaving) cancelRoleChange(); }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-amber-600" />
+                Change user role?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                <span className="block font-semibold text-foreground mb-1">{pendingRole?.name}</span>
+                Role will change from <span className="font-semibold">{pendingRole?.previous}</span> to{' '}
+                <span className="font-semibold">{pendingRole?.role}</span>. This changes what data this
+                person can see and manage — granting admin gives full delete access.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={roleSaving} onClick={cancelRoleChange}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={roleSaving}
+                onClick={(e) => { e.preventDefault(); confirmRoleChange(); }}
+              >
+                {roleSaving ? 'Updating…' : 'Confirm change'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </DonationLayout>
   );
