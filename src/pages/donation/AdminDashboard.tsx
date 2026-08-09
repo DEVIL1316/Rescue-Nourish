@@ -7,8 +7,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Users, Package, Trash2, Search, UserCog, Building2 } from 'lucide-react';
+import { Shield, Users, Package, Trash2, Search, UserCog, Building2, AlertTriangle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { ConfirmDestructive } from '@/components/donation/ConfirmDestructive';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
