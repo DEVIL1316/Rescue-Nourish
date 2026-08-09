@@ -242,9 +242,17 @@ export default function AdminDashboard() {
                       {d.food_type && `${d.food_type} • `}{d.status} • {d.tracking_status}
                     </p>
                   </div>
-                  <Button size="sm" variant="destructive" onClick={() => deleteDonation(d.id)}>
-                    <Trash2 className="h-4 w-4 mr-1" /> Delete
-                  </Button>
+                  <ConfirmDestructive
+                    title="Delete this donation?"
+                    itemLabel={d.title}
+                    description="The donation listing, its tracking history and any linked messages will no longer be visible to donors or NGOs. This cannot be undone."
+                    onConfirm={() => deleteDonation(d.id)}
+                    trigger={
+                      <Button size="sm" variant="destructive">
+                        <Trash2 className="h-4 w-4 mr-1" /> Delete
+                      </Button>
+                    }
+                  />
                 </CardContent>
               </Card>
             ))}
