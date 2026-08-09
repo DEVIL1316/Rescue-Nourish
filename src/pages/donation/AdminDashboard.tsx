@@ -75,17 +75,28 @@ export default function AdminDashboard() {
     });
   };
 
-  const updateUserRole = async (userId: string, newRole: string) => {
+  const confirmRoleChange = async () => {
+    if (!pendingRole) return;
+    setRoleSaving(true);
     const { error } = await supabase
       .from('user_roles')
-      .update({ role: newRole as any })
-      .eq('user_id', userId);
+      .update({ role: pendingRole.role as any })
+      .eq('user_id', pendingRole.userId);
+    setRoleSaving(false);
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      setRoleSelectKey(k => k + 1);
+      setPendingRole(null);
       return;
     }
-    toast({ title: `Role updated to ${newRole}` });
+    toast({ title: `Role updated to ${pendingRole.role}` });
+    setPendingRole(null);
     fetchAll();
+  };
+
+  const cancelRoleChange = () => {
+    setPendingRole(null);
+    setRoleSelectKey(k => k + 1); // reset the select back to the stored role
   };
 
   const deleteDonation = async (id: string) => {
