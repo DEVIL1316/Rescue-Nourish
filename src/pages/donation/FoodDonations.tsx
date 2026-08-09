@@ -232,6 +232,7 @@ export default function FoodDonations() {
                     )}
                     {d.description && <p className="text-xs text-gray-500 mt-1 line-clamp-2">{d.description}</p>}
                     <p className="text-xs text-gray-400 mt-2">By {d.profiles?.full_name || 'Anonymous'}</p>
+                    <BookingSlots donationId={d.id} donorId={d.donor_id} />
                   </CardContent>
                 </Card>
               ))}
