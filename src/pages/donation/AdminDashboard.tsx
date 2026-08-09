@@ -7,8 +7,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Users, Package, Trash2, Search, UserCog, Building2 } from 'lucide-react';
+import { Shield, Users, Package, Trash2, Search, UserCog, Building2, AlertTriangle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { ConfirmDestructive } from '@/components/donation/ConfirmDestructive';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -19,6 +30,11 @@ export default function AdminDashboard() {
   const [requests, setRequests] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [stats, setStats] = useState({ users: 0, donations: 0, ngos: 0, orphanages: 0 });
+  const [pendingRole, setPendingRole] = useState<
+    { userId: string; role: string; name: string; previous: string } | null
+  >(null);
+  const [roleSaving, setRoleSaving] = useState(false);
+  const [roleSelectKey, setRoleSelectKey] = useState(0);
 
   useEffect(() => {
     fetchAll();
@@ -59,17 +75,28 @@ export default function AdminDashboard() {
     });
   };
 
-  const updateUserRole = async (userId: string, newRole: string) => {
+  const confirmRoleChange = async () => {
+    if (!pendingRole) return;
+    setRoleSaving(true);
     const { error } = await supabase
       .from('user_roles')
-      .update({ role: newRole as any })
-      .eq('user_id', userId);
+      .update({ role: pendingRole.role as any })
+      .eq('user_id', pendingRole.userId);
+    setRoleSaving(false);
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      setRoleSelectKey(k => k + 1);
+      setPendingRole(null);
       return;
     }
-    toast({ title: `Role updated to ${newRole}` });
+    toast({ title: `Role updated to ${pendingRole.role}` });
+    setPendingRole(null);
     fetchAll();
+  };
+
+  const cancelRoleChange = () => {
+    setPendingRole(null);
+    setRoleSelectKey(k => k + 1); // reset the select back to the stored role
   };
 
   const deleteDonation = async (id: string) => {
@@ -178,8 +205,18 @@ export default function AdminDashboard() {
                     </p>
                   </div>
                   <Select
+                    key={`${u.user_id}-${roleSelectKey}`}
                     defaultValue={u.user_roles?.[0]?.role || u.role_type}
-                    onValueChange={(val) => updateUserRole(u.user_id, val)}
+                    onValueChange={(val) => {
+                      const previous = u.user_roles?.[0]?.role || u.role_type || 'unknown';
+                      if (val === previous) return;
+                      setPendingRole({
+                        userId: u.user_id,
+                        role: val,
+                        name: u.full_name || 'this user',
+                        previous,
+                      });
+                    }}
                   >
                     <SelectTrigger className="w-36">
                       <SelectValue />
@@ -205,9 +242,17 @@ export default function AdminDashboard() {
                       {d.food_type && `${d.food_type} • `}{d.status} • {d.tracking_status}
                     </p>
                   </div>
-                  <Button size="sm" variant="destructive" onClick={() => deleteDonation(d.id)}>
-                    <Trash2 className="h-4 w-4 mr-1" /> Delete
-                  </Button>
+                  <ConfirmDestructive
+                    title="Delete this donation?"
+                    itemLabel={d.title}
+                    description="The donation listing, its tracking history and any linked messages will no longer be visible to donors or NGOs. This cannot be undone."
+                    onConfirm={() => deleteDonation(d.id)}
+                    trigger={
+                      <Button size="sm" variant="destructive">
+                        <Trash2 className="h-4 w-4 mr-1" /> Delete
+                      </Button>
+                    }
+                  />
                 </CardContent>
               </Card>
             ))}
@@ -221,9 +266,18 @@ export default function AdminDashboard() {
                     <p className="font-semibold text-emerald-800">{n.name}</p>
                     <p className="text-xs text-gray-500">{n.location || 'No location'}</p>
                   </div>
-                  <Button size="sm" variant="destructive" onClick={() => deleteNgo(n.id)}>
-                    <Trash2 className="h-4 w-4 mr-1" /> Delete
-                  </Button>
+                  <ConfirmDestructive
+                    title="Delete this NGO?"
+                    itemLabel={n.name}
+                    requireTyping
+                    description="Removing an NGO also removes it from the directory and from smart-matching suggestions. This cannot be undone."
+                    onConfirm={() => deleteNgo(n.id)}
+                    trigger={
+                      <Button size="sm" variant="destructive">
+                        <Trash2 className="h-4 w-4 mr-1" /> Delete
+                      </Button>
+                    }
+                  />
                 </CardContent>
               </Card>
             ))}
@@ -237,9 +291,18 @@ export default function AdminDashboard() {
                     <p className="font-semibold text-emerald-800">{o.name}</p>
                     <p className="text-xs text-gray-500">{o.location || 'No location'} • {o.number_of_people || 0} people</p>
                   </div>
-                  <Button size="sm" variant="destructive" onClick={() => deleteOrphanage(o.id)}>
-                    <Trash2 className="h-4 w-4 mr-1" /> Delete
-                  </Button>
+                  <ConfirmDestructive
+                    title="Delete this orphanage?"
+                    itemLabel={o.name}
+                    requireTyping
+                    description="Its capacity details and posted needs will be removed from matching and the directory. This cannot be undone."
+                    onConfirm={() => deleteOrphanage(o.id)}
+                    trigger={
+                      <Button size="sm" variant="destructive">
+                        <Trash2 className="h-4 w-4 mr-1" /> Delete
+                      </Button>
+                    }
+                  />
                 </CardContent>
               </Card>
             ))}
@@ -296,9 +359,17 @@ export default function AdminDashboard() {
                           Posted: {new Date(r.created_at).toLocaleString()}
                         </p>
                       </div>
-                      <Button size="sm" variant="destructive" onClick={() => deleteRequest(r.id)}>
-                        <Trash2 className="h-4 w-4 mr-1" /> Delete
-                      </Button>
+                      <ConfirmDestructive
+                        title="Delete this request?"
+                        itemLabel={r.title}
+                        description={`Posted by ${r.poster_name}. Deleting removes it from open needs and matching. This cannot be undone.`}
+                        onConfirm={() => deleteRequest(r.id)}
+                        trigger={
+                          <Button size="sm" variant="destructive">
+                            <Trash2 className="h-4 w-4 mr-1" /> Delete
+                          </Button>
+                        }
+                      />
                     </div>
                   </CardContent>
                 </Card>
@@ -306,6 +377,33 @@ export default function AdminDashboard() {
             })}
           </TabsContent>
         </Tabs>
+
+        {/* Role change safeguard */}
+        <AlertDialog open={!!pendingRole} onOpenChange={(o) => { if (!o && !roleSaving) cancelRoleChange(); }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-amber-600" />
+                Change user role?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                <span className="block font-semibold text-foreground mb-1">{pendingRole?.name}</span>
+                Role will change from <span className="font-semibold">{pendingRole?.previous}</span> to{' '}
+                <span className="font-semibold">{pendingRole?.role}</span>. This changes what data this
+                person can see and manage — granting admin gives full delete access.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={roleSaving} onClick={cancelRoleChange}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={roleSaving}
+                onClick={(e) => { e.preventDefault(); confirmRoleChange(); }}
+              >
+                {roleSaving ? 'Updating…' : 'Confirm change'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </DonationLayout>
   );
