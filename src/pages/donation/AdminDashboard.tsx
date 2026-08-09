@@ -266,9 +266,18 @@ export default function AdminDashboard() {
                     <p className="font-semibold text-emerald-800">{n.name}</p>
                     <p className="text-xs text-gray-500">{n.location || 'No location'}</p>
                   </div>
-                  <Button size="sm" variant="destructive" onClick={() => deleteNgo(n.id)}>
-                    <Trash2 className="h-4 w-4 mr-1" /> Delete
-                  </Button>
+                  <ConfirmDestructive
+                    title="Delete this NGO?"
+                    itemLabel={n.name}
+                    requireTyping
+                    description="Removing an NGO also removes it from the directory and from smart-matching suggestions. This cannot be undone."
+                    onConfirm={() => deleteNgo(n.id)}
+                    trigger={
+                      <Button size="sm" variant="destructive">
+                        <Trash2 className="h-4 w-4 mr-1" /> Delete
+                      </Button>
+                    }
+                  />
                 </CardContent>
               </Card>
             ))}
