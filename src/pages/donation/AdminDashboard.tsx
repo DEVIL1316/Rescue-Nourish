@@ -205,8 +205,18 @@ export default function AdminDashboard() {
                     </p>
                   </div>
                   <Select
+                    key={`${u.user_id}-${roleSelectKey}`}
                     defaultValue={u.user_roles?.[0]?.role || u.role_type}
-                    onValueChange={(val) => updateUserRole(u.user_id, val)}
+                    onValueChange={(val) => {
+                      const previous = u.user_roles?.[0]?.role || u.role_type || 'unknown';
+                      if (val === previous) return;
+                      setPendingRole({
+                        userId: u.user_id,
+                        role: val,
+                        name: u.full_name || 'this user',
+                        previous,
+                      });
+                    }}
                   >
                     <SelectTrigger className="w-36">
                       <SelectValue />
