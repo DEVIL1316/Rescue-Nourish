@@ -14,6 +14,7 @@ import { toast } from '@/hooks/use-toast';
 import { LocationSelect } from '@/components/donation/LocationSelect';
 import { computeMatches, MatchResult } from '@/lib/smartMatching';
 import { SEO } from '@/components/SEO';
+import { BookingSlots } from '@/components/donation/BookingSlots';
 
 const SAMPLE_ORPHANAGES = [
   { id: 'sample-1', name: 'Sunshine Children\'s Home', location: 'Koramangala, Bangalore', contact_phone: '+91 80 2345 6789', contact_email: 'info@sunshinechildren.org', description: 'A loving home for abandoned and orphaned children providing education and care.', needs_description: 'School supplies, clothing, nutritious food', number_of_people: 85, created_by: 'system' },
@@ -231,6 +232,7 @@ export default function FoodDonations() {
                     )}
                     {d.description && <p className="text-xs text-gray-500 mt-1 line-clamp-2">{d.description}</p>}
                     <p className="text-xs text-gray-400 mt-2">By {d.profiles?.full_name || 'Anonymous'}</p>
+                    <BookingSlots donationId={d.id} donorId={d.donor_id} />
                   </CardContent>
                 </Card>
               ))}
