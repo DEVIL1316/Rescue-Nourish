@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      donation_bookings: {
+        Row: {
+          booked_by: string
+          booker_name: string | null
+          created_at: string
+          donation_id: string
+          id: string
+          notes: string | null
+          slot_date: string
+          slot_time: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          booked_by: string
+          booker_name?: string | null
+          created_at?: string
+          donation_id: string
+          id?: string
+          notes?: string | null
+          slot_date: string
+          slot_time: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          booked_by?: string
+          booker_name?: string | null
+          created_at?: string
+          donation_id?: string
+          id?: string
+          notes?: string | null
+          slot_date?: string
+          slot_time?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "donation_bookings_donation_id_fkey"
+            columns: ["donation_id"]
+            isOneToOne: false
+            referencedRelation: "donations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       donations: {
         Row: {
           created_at: string
