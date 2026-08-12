@@ -94,7 +94,7 @@ export default function FoodDonations() {
   const addOrphanage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    const { error } = await supabase.from('orphanages').insert({ ...orphanageForm, number_of_people: orphanageForm.number_of_people || null, created_by: user.id });
+    const { error } = await supabase.from('orphanages').insert({ ...orphanageForm, number_of_people: orphanageForm.number_of_people || null, current_capacity: orphanageForm.current_capacity || null, required_quantity: orphanageForm.required_quantity || null, created_by: user.id });
     if (error) { toast({ title: 'Error', description: error.message, variant: 'destructive' }); return; }
     toast({ title: 'Orphanage added!' });
     setShowAddOrphanage(false);
