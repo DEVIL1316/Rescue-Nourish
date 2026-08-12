@@ -14,6 +14,77 @@ export type Database = {
   }
   public: {
     Tables: {
+      deliveries: {
+        Row: {
+          assigned_at: string
+          assigned_name: string | null
+          assigned_to: string | null
+          created_at: string
+          delivered_at: string | null
+          destination_location: string | null
+          distance_km: number
+          donation_id: string
+          eta_minutes: number
+          id: string
+          in_transit_at: string | null
+          is_seed: boolean
+          notes: string | null
+          picked_up_at: string | null
+          pickup_location: string | null
+          recipient_name: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_name?: string | null
+          assigned_to?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          destination_location?: string | null
+          distance_km?: number
+          donation_id: string
+          eta_minutes?: number
+          id?: string
+          in_transit_at?: string | null
+          is_seed?: boolean
+          notes?: string | null
+          picked_up_at?: string | null
+          pickup_location?: string | null
+          recipient_name?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_name?: string | null
+          assigned_to?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          destination_location?: string | null
+          distance_km?: number
+          donation_id?: string
+          eta_minutes?: number
+          id?: string
+          in_transit_at?: string | null
+          is_seed?: boolean
+          notes?: string | null
+          picked_up_at?: string | null
+          pickup_location?: string | null
+          recipient_name?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deliveries_donation_id_fkey"
+            columns: ["donation_id"]
+            isOneToOne: false
+            referencedRelation: "donations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       donation_bookings: {
         Row: {
           booked_by: string
@@ -67,9 +138,13 @@ export type Database = {
           delivered_at: string | null
           description: string | null
           donor_id: string
+          donor_type: string
+          expiry_time: string | null
           food_type: string | null
           id: string
           image_url: string | null
+          is_seed: boolean
+          location: string | null
           picked_up_at: string | null
           quality_rating: number | null
           quantity: string | null
@@ -78,15 +153,20 @@ export type Database = {
           status: string
           title: string
           tracking_status: string
+          urgency: string
         }
         Insert: {
           created_at?: string
           delivered_at?: string | null
           description?: string | null
           donor_id: string
+          donor_type?: string
+          expiry_time?: string | null
           food_type?: string | null
           id?: string
           image_url?: string | null
+          is_seed?: boolean
+          location?: string | null
           picked_up_at?: string | null
           quality_rating?: number | null
           quantity?: string | null
@@ -95,15 +175,20 @@ export type Database = {
           status?: string
           title: string
           tracking_status?: string
+          urgency?: string
         }
         Update: {
           created_at?: string
           delivered_at?: string | null
           description?: string | null
           donor_id?: string
+          donor_type?: string
+          expiry_time?: string | null
           food_type?: string | null
           id?: string
           image_url?: string | null
+          is_seed?: boolean
+          location?: string | null
           picked_up_at?: string | null
           quality_rating?: number | null
           quantity?: string | null
@@ -112,6 +197,7 @@ export type Database = {
           status?: string
           title?: string
           tracking_status?: string
+          urgency?: string
         }
         Relationships: [
           {
@@ -199,11 +285,16 @@ export type Database = {
           contact_email: string | null
           contact_phone: string | null
           created_at: string
+          current_capacity: number
           description: string | null
           id: string
+          is_seed: boolean
           location: string | null
           logo_url: string | null
           name: string
+          required_food_types: string[]
+          required_quantity: string | null
+          urgency: string
           user_id: string
           website: string | null
         }
@@ -211,11 +302,16 @@ export type Database = {
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
+          current_capacity?: number
           description?: string | null
           id?: string
+          is_seed?: boolean
           location?: string | null
           logo_url?: string | null
           name: string
+          required_food_types?: string[]
+          required_quantity?: string | null
+          urgency?: string
           user_id: string
           website?: string | null
         }
@@ -223,11 +319,16 @@ export type Database = {
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
+          current_capacity?: number
           description?: string | null
           id?: string
+          is_seed?: boolean
           location?: string | null
           logo_url?: string | null
           name?: string
+          required_food_types?: string[]
+          required_quantity?: string | null
+          urgency?: string
           user_id?: string
           website?: string | null
         }
@@ -280,39 +381,54 @@ export type Database = {
           contact_phone: string | null
           created_at: string
           created_by: string
+          current_capacity: number
           description: string | null
           id: string
           image_url: string | null
+          is_seed: boolean
           location: string | null
           name: string
           needs_description: string | null
           number_of_people: number | null
+          required_food_types: string[]
+          required_quantity: string | null
+          urgency: string
         }
         Insert: {
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
           created_by: string
+          current_capacity?: number
           description?: string | null
           id?: string
           image_url?: string | null
+          is_seed?: boolean
           location?: string | null
           name: string
           needs_description?: string | null
           number_of_people?: number | null
+          required_food_types?: string[]
+          required_quantity?: string | null
+          urgency?: string
         }
         Update: {
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
           created_by?: string
+          current_capacity?: number
           description?: string | null
           id?: string
           image_url?: string | null
+          is_seed?: boolean
           location?: string | null
           name?: string
           needs_description?: string | null
           number_of_people?: number | null
+          required_food_types?: string[]
+          required_quantity?: string | null
+          urgency?: string
         }
         Relationships: []
       }

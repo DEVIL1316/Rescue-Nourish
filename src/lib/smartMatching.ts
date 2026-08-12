@@ -1,67 +1,29 @@
 /**
  * Smart Matching Algorithm for Rescue & Nourish
- * Scores donor-orphanage compatibility based on:
- * 1. Location proximity (same area = highest score)
- * 2. Food type vs needs keyword matching
- * 3. Orphanage size (larger = higher priority)
+ * Scores donor-recipient compatibility based on:
+ * 1. Location proximity  (40%) — cluster-based km estimate
+ * 2. Need match          (40%) — structured food-type overlap, keyword fallback
+ * 3. Capacity fit        (20%) — donation size vs remaining capacity
+ * Urgency is used as a tie-breaker.
  */
 
-import { BANGALORE_LOCATIONS } from '@/components/donation/LocationSelect';
+import { proximityScore, estimateRoute } from '@/lib/distance';
+import { parseQuantity } from '@/lib/donationConstants';
 
-// Location clusters for proximity scoring
-const LOCATION_CLUSTERS: Record<string, string[]> = {
-  'South': ['Koramangala, Bangalore', 'Jayanagar, Bangalore', 'JP Nagar, Bangalore', 'BTM Layout, Bangalore', 'HSR Layout, Bangalore', 'Banashankari, Bangalore', 'Basavanagudi, Bangalore'],
-  'East': ['Indiranagar, Bangalore', 'Whitefield, Bangalore', 'Marathahalli, Bangalore', 'KR Puram, Bangalore'],
-  'North': ['Hebbal, Bangalore', 'Yelahanka, Bangalore'],
-  'West': ['Rajajinagar, Bangalore', 'Malleswaram, Bangalore', 'Vijayanagar, Bangalore', 'Peenya, Bangalore'],
-  'Central': ['MG Road, Bangalore', 'Brigade Road, Bangalore'],
-  'South-East': ['Electronic City, Bangalore'],
-};
-
-function getCluster(location: string): string | null {
-  for (const [cluster, locs] of Object.entries(LOCATION_CLUSTERS)) {
-    if (locs.includes(location)) return cluster;
-  }
-  return null;
-}
-
-function locationScore(donorLocation: string, orphanageLocation: string): number {
-  if (!donorLocation || !orphanageLocation) return 0;
-  if (donorLocation === orphanageLocation) return 100; // Same area
-  const c1 = getCluster(donorLocation);
-  const c2 = getCluster(orphanageLocation);
-  if (c1 && c2 && c1 === c2) return 70; // Same cluster
-  // Adjacent clusters get partial score
-  const adjacent: Record<string, string[]> = {
-    'South': ['East', 'Central', 'South-East'],
-    'East': ['South', 'Central', 'North', 'South-East'],
-    'North': ['West', 'East', 'Central'],
-    'West': ['North', 'Central'],
-    'Central': ['South', 'East', 'North', 'West'],
-    'South-East': ['South', 'East'],
-  };
-  if (c1 && c2 && adjacent[c1]?.includes(c2)) return 40;
-  return 10; // Far apart
-}
-
-function needsScore(foodType: string, needsDescription: string): number {
-  if (!foodType || !needsDescription) return 20; // Neutral if no data
+function keywordNeedsScore(foodType: string, needsDescription: string): number {
+  if (!foodType || !needsDescription) return 20;
   const food = foodType.toLowerCase();
   const needs = needsDescription.toLowerCase();
 
   const foodKeywords = food.split(/[\s,]+/).filter(w => w.length > 2);
   const needsKeywords = needs.split(/[\s,]+/).filter(w => w.length > 2);
 
-  // Direct food-related need keywords
   const foodNeedWords = ['food', 'rice', 'dal', 'vegetables', 'fruits', 'bread', 'milk', 'dairy', 'cooking', 'nutritious', 'meals', 'snacks', 'beverages', 'oil'];
   const hasGeneralFoodNeed = foodNeedWords.some(w => needs.includes(w));
 
-  // Check for keyword overlap
   let matchCount = 0;
   for (const fk of foodKeywords) {
-    if (needsKeywords.some(nk => nk.includes(fk) || fk.includes(nk))) {
-      matchCount++;
-    }
+    if (needsKeywords.some(nk => nk.includes(fk) || fk.includes(nk))) matchCount++;
   }
 
   if (matchCount > 0) return 100;
@@ -69,12 +31,52 @@ function needsScore(foodType: string, needsDescription: string): number {
   return 15;
 }
 
-function sizeScore(numberOfPeople: number | null): number {
-  if (!numberOfPeople) return 30;
-  if (numberOfPeople >= 100) return 100;
-  if (numberOfPeople >= 50) return 70;
-  if (numberOfPeople >= 20) return 50;
+/** Structured food-type overlap when the recipient filled in required_food_types. */
+function needsScore(foodType: string, recipient: any): number {
+  const required: string[] = Array.isArray(recipient?.required_food_types) ? recipient.required_food_types : [];
+  if (required.length > 0 && foodType) {
+    const food = foodType.toLowerCase();
+    const exact = required.some(r => r.toLowerCase() === food);
+    if (exact) return 100;
+    const partial = required.some(r => {
+      const rl = r.toLowerCase();
+      return rl.includes(food) || food.includes(rl) || rl.split(/[\s&/]+/).some(w => w.length > 3 && food.includes(w));
+    });
+    if (partial) return 80;
+    return 25;
+  }
+  return keywordNeedsScore(foodType, recipient?.needs_description || '');
+}
+
+/**
+ * Capacity fit: how well the donation size suits the remaining capacity.
+ * Falls back to headcount when capacity is not recorded.
+ */
+function capacityScore(donationQuantity: string | undefined, recipient: any): number {
+  const capacity = Number(recipient?.current_capacity) || 0;
+  const headcount = Number(recipient?.number_of_people) || 0;
+  const qty = parseQuantity(donationQuantity);
+
+  if (capacity > 0 && qty) {
+    const ratio = qty / capacity;
+    if (ratio >= 0.75 && ratio <= 1.5) return 100; // right-sized
+    if (ratio >= 0.4 && ratio < 0.75) return 75;
+    if (ratio > 1.5 && ratio <= 3) return 60;
+    return 35;
+  }
+
+  const size = capacity || headcount;
+  if (!size) return 30;
+  if (size >= 100) return 100;
+  if (size >= 50) return 70;
+  if (size >= 20) return 50;
   return 30;
+}
+
+function urgencyBonus(urgency?: string | null): number {
+  if (urgency === 'high') return 2;
+  if (urgency === 'low') return -1;
+  return 0;
 }
 
 export interface MatchResult {
@@ -84,31 +86,46 @@ export interface MatchResult {
   needsScore: number;
   sizeScore: number;
   matchLabel: string;
+  distanceKm: number;
+  etaMinutes: number;
+  distanceLabel: string;
 }
 
 export function computeMatches(
-  donation: { food_type?: string; title?: string; donor_location?: string },
-  orphanages: any[],
+  donation: { food_type?: string; title?: string; donor_location?: string; quantity?: string; urgency?: string },
+  recipients: any[],
   donorProfileLocation?: string
 ): MatchResult[] {
   const donorLoc = donation.donor_location || donorProfileLocation || '';
   const foodType = donation.food_type || donation.title || '';
 
-  return orphanages
-    .map(orphanage => {
-      const ls = locationScore(donorLoc, orphanage.location || '');
-      const ns = needsScore(foodType, orphanage.needs_description || '');
-      const ss = sizeScore(orphanage.number_of_people);
+  return recipients
+    .map(recipient => {
+      const ls = proximityScore(donorLoc, recipient.location || '');
+      const ns = needsScore(foodType, recipient);
+      const ss = capacityScore(donation.quantity, recipient);
+      const route = estimateRoute(donorLoc, recipient.location || '');
 
-      // Weighted score: location 40%, needs 40%, size 20%
-      const score = Math.round(ls * 0.4 + ns * 0.4 + ss * 0.2);
+      let score = Math.round(ls * 0.4 + ns * 0.4 + ss * 0.2);
+      // Urgency on either side nudges the ranking without overwhelming the weights.
+      score = Math.max(0, Math.min(100, score + urgencyBonus(recipient.urgency) + urgencyBonus(donation.urgency)));
 
       let matchLabel = 'Low Match';
       if (score >= 75) matchLabel = 'Excellent Match';
       else if (score >= 55) matchLabel = 'Good Match';
       else if (score >= 35) matchLabel = 'Fair Match';
 
-      return { orphanage, score, locationScore: ls, needsScore: ns, sizeScore: ss, matchLabel };
+      return {
+        orphanage: recipient,
+        score,
+        locationScore: ls,
+        needsScore: ns,
+        sizeScore: ss,
+        matchLabel,
+        distanceKm: route.distanceKm,
+        etaMinutes: route.etaMinutes,
+        distanceLabel: route.label,
+      };
     })
     .sort((a, b) => b.score - a.score);
 }

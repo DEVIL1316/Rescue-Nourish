@@ -15,6 +15,9 @@ import { LocationSelect } from '@/components/donation/LocationSelect';
 import { computeMatches, MatchResult } from '@/lib/smartMatching';
 import { SEO } from '@/components/SEO';
 import { BookingSlots } from '@/components/donation/BookingSlots';
+import { FoodTypeSelect } from '@/components/donation/FoodTypeSelect';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { FOOD_TYPES, DONOR_TYPES, URGENCY_LEVELS, urgencyClasses, formatExpiry, isExpired, urgencyFromExpiry } from '@/lib/donationConstants';
 
 const SAMPLE_ORPHANAGES = [
   { id: 'sample-1', name: 'Sunshine Children\'s Home', location: 'Koramangala, Bangalore', contact_phone: '+91 80 2345 6789', contact_email: 'info@sunshinechildren.org', description: 'A loving home for abandoned and orphaned children providing education and care.', needs_description: 'School supplies, clothing, nutritious food', number_of_people: 85, created_by: 'system' },
@@ -30,17 +33,23 @@ export default function FoodDonations() {
   const [orphanages, setOrphanages] = useState<any[]>([]);
   const [showAddDonation, setShowAddDonation] = useState(false);
   const [showAddOrphanage, setShowAddOrphanage] = useState(false);
-  const [donationForm, setDonationForm] = useState({ title: '', description: '', food_type: '', quantity: '', quality_rating: 5, image_url: null as string | null, location: '' });
-  const [orphanageForm, setOrphanageForm] = useState({ name: '', location: '', contact_phone: '', contact_email: '', description: '', needs_description: '', number_of_people: 0 });
+  const [donationForm, setDonationForm] = useState({ title: '', description: '', food_type: '', quantity: '', quality_rating: 5, image_url: null as string | null, location: '', expiry_time: '', urgency: 'medium', donor_type: 'individual' });
+  const [orphanageForm, setOrphanageForm] = useState({ name: '', location: '', contact_phone: '', contact_email: '', description: '', needs_description: '', number_of_people: 0, required_food_types: [] as string[], required_quantity: '', current_capacity: 0, urgency: 'medium' });
+  const [showExpired, setShowExpired] = useState(false);
 
   // Smart matching suggestions
   const suggestedMatches = useMemo(() => {
     if (!donationForm.food_type && !donationForm.title) return [];
     return computeMatches(
-      { food_type: donationForm.food_type, title: donationForm.title, donor_location: donationForm.location },
+      { food_type: donationForm.food_type, title: donationForm.title, donor_location: donationForm.location, quantity: donationForm.quantity, urgency: donationForm.urgency },
       orphanages
     ).slice(0, 3);
-  }, [donationForm.food_type, donationForm.title, donationForm.location, orphanages]);
+  }, [donationForm.food_type, donationForm.title, donationForm.location, donationForm.quantity, donationForm.urgency, orphanages]);
+
+  const visibleDonations = useMemo(
+    () => (showExpired ? donations : donations.filter(d => !isExpired(d.expiry_time))),
+    [donations, showExpired]
+  );
 
   useEffect(() => {
     fetchData();
@@ -69,23 +78,27 @@ export default function FoodDonations() {
       quantity: donationForm.quantity,
       quality_rating: donationForm.quality_rating,
       image_url: donationForm.image_url,
+      location: donationForm.location || null,
+      expiry_time: donationForm.expiry_time ? new Date(donationForm.expiry_time).toISOString() : null,
+      urgency: donationForm.urgency,
+      donor_type: donationForm.donor_type,
       donor_id: user.id,
     });
     if (error) { toast({ title: 'Error', description: error.message, variant: 'destructive' }); return; }
     toast({ title: 'Donation added! 🎉' });
     setShowAddDonation(false);
-    setDonationForm({ title: '', description: '', food_type: '', quantity: '', quality_rating: 5, image_url: null as string | null, location: '' });
+    setDonationForm({ title: '', description: '', food_type: '', quantity: '', quality_rating: 5, image_url: null as string | null, location: '', expiry_time: '', urgency: 'medium', donor_type: 'individual' });
     fetchData();
   };
 
   const addOrphanage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    const { error } = await supabase.from('orphanages').insert({ ...orphanageForm, number_of_people: orphanageForm.number_of_people || null, created_by: user.id });
+    const { error } = await supabase.from('orphanages').insert({ ...orphanageForm, number_of_people: orphanageForm.number_of_people || null, current_capacity: orphanageForm.current_capacity || null, required_quantity: orphanageForm.required_quantity || null, created_by: user.id });
     if (error) { toast({ title: 'Error', description: error.message, variant: 'destructive' }); return; }
     toast({ title: 'Orphanage added!' });
     setShowAddOrphanage(false);
-    setOrphanageForm({ name: '', location: '', contact_phone: '', contact_email: '', description: '', needs_description: '', number_of_people: 0 });
+    setOrphanageForm({ name: '', location: '', contact_phone: '', contact_email: '', description: '', needs_description: '', number_of_people: 0, required_food_types: [], required_quantity: '', current_capacity: 0, urgency: 'medium' });
     fetchData();
   };
 
@@ -130,10 +143,46 @@ export default function FoodDonations() {
               <form onSubmit={addDonation} className="space-y-4">
                 <div><Label>Title</Label><Input value={donationForm.title} onChange={e => setDonationForm(p => ({ ...p, title: e.target.value }))} required placeholder="e.g. Cooked rice and curry" /></div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><Label>Food Type</Label><Input value={donationForm.food_type} onChange={e => setDonationForm(p => ({ ...p, food_type: e.target.value }))} placeholder="e.g. Rice" /></div>
+                  <div>
+                    <Label>Food Type</Label>
+                    <Select value={donationForm.food_type} onValueChange={v => setDonationForm(p => ({ ...p, food_type: v }))}>
+                      <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                      <SelectContent className="bg-background z-50">
+                        {FOOD_TYPES.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div><Label>Quantity</Label><Input value={donationForm.quantity} onChange={e => setDonationForm(p => ({ ...p, quantity: e.target.value }))} placeholder="e.g. 50 kg" /></div>
                 </div>
-                <LocationSelect value={donationForm.location} onChange={v => setDonationForm(p => ({ ...p, location: v }))} label="Your Location" />
+                <LocationSelect value={donationForm.location} onChange={v => setDonationForm(p => ({ ...p, location: v }))} label="Pickup Location" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label>Best Before / Expiry</Label>
+                    <Input
+                      type="datetime-local"
+                      value={donationForm.expiry_time}
+                      onChange={e => setDonationForm(p => ({ ...p, expiry_time: e.target.value, urgency: urgencyFromExpiry(e.target.value ? new Date(e.target.value).toISOString() : null) }))}
+                    />
+                  </div>
+                  <div>
+                    <Label>Urgency</Label>
+                    <Select value={donationForm.urgency} onValueChange={v => setDonationForm(p => ({ ...p, urgency: v }))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent className="bg-background z-50">
+                        {URGENCY_LEVELS.map(u => <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label>Donor Type</Label>
+                  <Select value={donationForm.donor_type} onValueChange={v => setDonationForm(p => ({ ...p, donor_type: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent className="bg-background z-50">
+                      {DONOR_TYPES.map(d => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div>
                   <Label>Quality (1-5)</Label>
                   <div className="flex gap-1 mt-1">
@@ -195,7 +244,21 @@ export default function FoodDonations() {
                 </div>
                 <div><Label>Number of People</Label><Input type="number" value={orphanageForm.number_of_people || ''} onChange={e => setOrphanageForm(p => ({ ...p, number_of_people: parseInt(e.target.value) || 0 }))} /></div>
                 <div><Label>Description</Label><Textarea value={orphanageForm.description} onChange={e => setOrphanageForm(p => ({ ...p, description: e.target.value }))} rows={2} /></div>
-                <div><Label>Needs</Label><Textarea value={orphanageForm.needs_description} onChange={e => setOrphanageForm(p => ({ ...p, needs_description: e.target.value }))} placeholder="What do they need?" rows={2} /></div>
+                <FoodTypeSelect value={orphanageForm.required_food_types} onChange={v => setOrphanageForm(p => ({ ...p, required_food_types: v }))} />
+                <div className="grid grid-cols-2 gap-3">
+                  <div><Label>Required Quantity</Label><Input value={orphanageForm.required_quantity} onChange={e => setOrphanageForm(p => ({ ...p, required_quantity: e.target.value }))} placeholder="e.g. 50 meals/day" /></div>
+                  <div><Label>Current Capacity</Label><Input type="number" value={orphanageForm.current_capacity || ''} onChange={e => setOrphanageForm(p => ({ ...p, current_capacity: parseInt(e.target.value) || 0 }))} placeholder="People servable now" /></div>
+                </div>
+                <div>
+                  <Label>Urgency</Label>
+                  <Select value={orphanageForm.urgency} onValueChange={v => setOrphanageForm(p => ({ ...p, urgency: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent className="bg-background z-50">
+                      {URGENCY_LEVELS.map(u => <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div><Label>Notes</Label><Textarea value={orphanageForm.needs_description} onChange={e => setOrphanageForm(p => ({ ...p, needs_description: e.target.value }))} placeholder="What do they need?" rows={2} /></div>
                 <Button type="submit" className="bg-orange-600 hover:bg-orange-700 w-full text-base py-3">Add Orphanage</Button>
               </form>
             </CardContent>
@@ -204,13 +267,18 @@ export default function FoodDonations() {
 
         {/* Donations List */}
         <div>
-          <h2 className="text-lg font-bold text-emerald-800 mb-3">Recent Donations</h2>
-          {donations.length === 0 ? (
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-bold text-emerald-800">Recent Donations</h2>
+            <Button variant="ghost" size="sm" className="text-xs text-emerald-700" onClick={() => setShowExpired(s => !s)}>
+              {showExpired ? 'Hide expired' : 'Show expired'}
+            </Button>
+          </div>
+          {visibleDonations.length === 0 ? (
             <Card className="border-dashed border-emerald-300 bg-emerald-50/30"><CardContent className="p-6 text-center text-emerald-600">No donations yet. Be the first to donate!</CardContent></Card>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {donations.map(d => (
-                <Card key={d.id} className="border-emerald-100 hover:shadow-lg transition-shadow overflow-hidden">
+              {visibleDonations.map(d => (
+                <Card key={d.id} className={`border-emerald-100 hover:shadow-lg transition-shadow overflow-hidden ${isExpired(d.expiry_time) ? 'opacity-60' : ''}`}>
                   {d.image_url && (
                     <img src={d.image_url} alt={d.title} className="w-full h-40 object-cover" />
                   )}
@@ -221,8 +289,18 @@ export default function FoodDonations() {
                         {d.status}
                       </span>
                     </div>
+                    <div className="flex flex-wrap gap-1.5 my-1.5">
+                      {d.urgency && <Badge variant="outline" className={`text-[10px] ${urgencyClasses(d.urgency)}`}>{d.urgency} urgency</Badge>}
+                      {formatExpiry(d.expiry_time) && (
+                        <Badge variant="outline" className={`text-[10px] ${isExpired(d.expiry_time) ? 'bg-gray-100 text-gray-600' : 'bg-amber-50 text-amber-700'}`}>
+                          {formatExpiry(d.expiry_time)}
+                        </Badge>
+                      )}
+                      {d.donor_type && <Badge variant="secondary" className="text-[10px] capitalize">{d.donor_type}</Badge>}
+                    </div>
                     {d.food_type && <p className="text-xs text-gray-600">🍽️ {d.food_type}</p>}
                     {d.quantity && <p className="text-xs text-gray-600">📦 {d.quantity}</p>}
+                    {d.location && <p className="text-xs text-gray-600 flex items-center gap-1"><MapPin className="h-3 w-3" /> {d.location}</p>}
                     {d.quality_rating && (
                       <div className="flex gap-0.5 mt-1">
                         {[1, 2, 3, 4, 5].map(n => (
@@ -233,6 +311,7 @@ export default function FoodDonations() {
                     {d.description && <p className="text-xs text-gray-500 mt-1 line-clamp-2">{d.description}</p>}
                     <p className="text-xs text-gray-400 mt-2">By {d.profiles?.full_name || 'Anonymous'}</p>
                     <BookingSlots donationId={d.id} donorId={d.donor_id} />
+
                   </CardContent>
                 </Card>
               ))}
