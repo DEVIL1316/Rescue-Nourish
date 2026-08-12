@@ -267,13 +267,18 @@ export default function FoodDonations() {
 
         {/* Donations List */}
         <div>
-          <h2 className="text-lg font-bold text-emerald-800 mb-3">Recent Donations</h2>
-          {donations.length === 0 ? (
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-bold text-emerald-800">Recent Donations</h2>
+            <Button variant="ghost" size="sm" className="text-xs text-emerald-700" onClick={() => setShowExpired(s => !s)}>
+              {showExpired ? 'Hide expired' : 'Show expired'}
+            </Button>
+          </div>
+          {visibleDonations.length === 0 ? (
             <Card className="border-dashed border-emerald-300 bg-emerald-50/30"><CardContent className="p-6 text-center text-emerald-600">No donations yet. Be the first to donate!</CardContent></Card>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {donations.map(d => (
-                <Card key={d.id} className="border-emerald-100 hover:shadow-lg transition-shadow overflow-hidden">
+              {visibleDonations.map(d => (
+                <Card key={d.id} className={`border-emerald-100 hover:shadow-lg transition-shadow overflow-hidden ${isExpired(d.expiry_time) ? 'opacity-60' : ''}`}>
                   {d.image_url && (
                     <img src={d.image_url} alt={d.title} className="w-full h-40 object-cover" />
                   )}
@@ -284,8 +289,18 @@ export default function FoodDonations() {
                         {d.status}
                       </span>
                     </div>
+                    <div className="flex flex-wrap gap-1.5 my-1.5">
+                      {d.urgency && <Badge variant="outline" className={`text-[10px] ${urgencyClasses(d.urgency)}`}>{d.urgency} urgency</Badge>}
+                      {formatExpiry(d.expiry_time) && (
+                        <Badge variant="outline" className={`text-[10px] ${isExpired(d.expiry_time) ? 'bg-gray-100 text-gray-600' : 'bg-amber-50 text-amber-700'}`}>
+                          {formatExpiry(d.expiry_time)}
+                        </Badge>
+                      )}
+                      {d.donor_type && <Badge variant="secondary" className="text-[10px] capitalize">{d.donor_type}</Badge>}
+                    </div>
                     {d.food_type && <p className="text-xs text-gray-600">🍽️ {d.food_type}</p>}
                     {d.quantity && <p className="text-xs text-gray-600">📦 {d.quantity}</p>}
+                    {d.location && <p className="text-xs text-gray-600 flex items-center gap-1"><MapPin className="h-3 w-3" /> {d.location}</p>}
                     {d.quality_rating && (
                       <div className="flex gap-0.5 mt-1">
                         {[1, 2, 3, 4, 5].map(n => (
@@ -296,6 +311,7 @@ export default function FoodDonations() {
                     {d.description && <p className="text-xs text-gray-500 mt-1 line-clamp-2">{d.description}</p>}
                     <p className="text-xs text-gray-400 mt-2">By {d.profiles?.full_name || 'Anonymous'}</p>
                     <BookingSlots donationId={d.id} donorId={d.donor_id} />
+
                   </CardContent>
                 </Card>
               ))}
