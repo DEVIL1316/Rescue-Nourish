@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useRole } from '@/hooks/useRole';
 import { useLanguage, LANGUAGES, Language } from '@/contexts/LanguageContext';
-import { Heart, Utensils, Stethoscope, MessageCircle, Building2, LogOut, HandHeart, UserCog, BarChart3, Truck, Bell, Eye, Shield, Brain, Languages } from 'lucide-react';
+import { Heart, Utensils, Stethoscope, MessageCircle, Building2, LogOut, HandHeart, UserCog, BarChart3, Truck, Bell, Eye, Shield, Brain, Languages, PackageSearch } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -20,6 +20,7 @@ export function DonationLayout({ children }: { children: ReactNode }) {
   const navItems = [
     { path: '/', label: t('nav.food'), icon: Utensils },
     { path: '/tracking', label: t('nav.tracking'), icon: Truck },
+    { path: '/deliveries', label: 'Deliveries', icon: PackageSearch },
     { path: '/needs', label: t('nav.needs'), icon: Stethoscope },
     { path: '/chat', label: t('nav.chat'), icon: MessageCircle },
     { path: '/ngos', label: t('nav.ngos'), icon: Building2 },
