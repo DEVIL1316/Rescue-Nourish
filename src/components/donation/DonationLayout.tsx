@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useRole } from '@/hooks/useRole';
 import { useLanguage, LANGUAGES, Language } from '@/contexts/LanguageContext';
-import { Heart, Utensils, Stethoscope, MessageCircle, Building2, LogOut, HandHeart, UserCog, BarChart3, Truck, Bell, Eye, Shield, Brain, Languages, PackageSearch } from 'lucide-react';
+import { Heart, Utensils, Stethoscope, MessageCircle, Building2, LogOut, HandHeart, UserCog, BarChart3, Truck, Bell, Eye, Shield, Brain, Languages, PackageSearch, History as HistoryIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
