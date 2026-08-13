@@ -3,7 +3,12 @@
   "sdk_version": "0.25.0",
   "path": "/functions/v1/mcp",
   "auth": {
-    "type": "none"
+    "type": "oauth",
+    "issuer": "https://ebrrdovguxpyjhuxzgbt.supabase.co/auth/v1",
+    "resource_name": "Rescue & Nourish MCP",
+    "accepted_audiences": [
+      "authenticated"
+    ]
   },
   "mcp": {
     "server": {

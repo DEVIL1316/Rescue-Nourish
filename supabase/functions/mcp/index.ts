@@ -3,7 +3,7 @@
 // supabase function: mcp
 // Bundled from src/lib/mcp/index.ts by @lovable.dev/mcp-js.
 // src/lib/mcp/index.ts
-import { defineMcp } from "npm:@lovable.dev/mcp-js@0.25.0";
+import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.25.0";
 
 // src/lib/mcp/tools/list-ngos.ts
 import { defineTool } from "npm:@lovable.dev/mcp-js@0.25.0";
@@ -88,7 +88,12 @@ var mcp_default = defineMcp({
   name: "rescue-nourish-mcp",
   title: "Rescue & Nourish",
   version: "0.1.0",
-  instructions: "Public directory tools for the Rescue & Nourish food donation platform. Use `list_ngos` to browse partner NGOs, `list_orphanages` to browse orphanages and their needs, and `list_open_needs` to see currently open help requests.",
+  instructions: "Directory tools for the Rescue & Nourish food donation platform. Use `list_ngos` to browse partner NGOs, `list_orphanages` to browse orphanages and their needs, and `list_open_needs` to see currently open help requests. Requires an authenticated Rescue & Nourish account.",
+  auth: auth.oauth.issuer({
+    issuer: `${process.env.SUPABASE_URL}/auth/v1`,
+    acceptedAudiences: "authenticated",
+    resourceName: "Rescue & Nourish MCP"
+  }),
   tools: [list_ngos_default, list_orphanages_default, list_open_needs_default]
 });
 
