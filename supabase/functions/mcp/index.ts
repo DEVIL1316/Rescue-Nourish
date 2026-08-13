@@ -48,10 +48,15 @@ var list_orphanages_default = defineTool2({
     limit: z2.number().int().min(1).max(200).default(50).describe("Maximum number of orphanages to return.")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ limit }) => {
+  handler: async ({ limit }, ctx) => {
+    const token = ctx?.getToken?.();
+    if (!token) {
+      return { content: [{ type: "text", text: "Authentication required." }], isError: true };
+    }
     const supabase = createClient2(
       process.env.SUPABASE_URL,
-      process.env.SUPABASE_PUBLISHABLE_KEY
+      process.env.SUPABASE_PUBLISHABLE_KEY,
+      { global: { headers: { Authorization: `Bearer ${token}` } } }
     );
     const { data, error } = await supabase.rpc("mcp_list_orphanages", { _limit: limit });
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
@@ -74,10 +79,15 @@ var list_open_needs_default = defineTool3({
     limit: z3.number().int().min(1).max(200).default(50).describe("Maximum number of open needs to return.")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ limit }) => {
+  handler: async ({ limit }, ctx) => {
+    const token = ctx?.getToken?.();
+    if (!token) {
+      return { content: [{ type: "text", text: "Authentication required." }], isError: true };
+    }
     const supabase = createClient3(
       process.env.SUPABASE_URL,
-      process.env.SUPABASE_PUBLISHABLE_KEY
+      process.env.SUPABASE_PUBLISHABLE_KEY,
+      { global: { headers: { Authorization: `Bearer ${token}` } } }
     );
     const { data, error } = await supabase.rpc("mcp_list_open_needs", { _limit: limit });
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
