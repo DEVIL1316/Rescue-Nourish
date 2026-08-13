@@ -21,6 +21,7 @@ export function DonationLayout({ children }: { children: ReactNode }) {
     { path: '/', label: t('nav.food'), icon: Utensils },
     { path: '/tracking', label: t('nav.tracking'), icon: Truck },
     { path: '/deliveries', label: 'Deliveries', icon: PackageSearch },
+    { path: '/history', label: 'History', icon: History },
     { path: '/needs', label: t('nav.needs'), icon: Stethoscope },
     { path: '/chat', label: t('nav.chat'), icon: MessageCircle },
     { path: '/ngos', label: t('nav.ngos'), icon: Building2 },
