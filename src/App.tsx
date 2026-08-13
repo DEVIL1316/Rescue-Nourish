@@ -52,6 +52,7 @@ const App = () => (
             <Route path="/" element={<RoleGuard><FoodDonations /></RoleGuard>} />
             <Route path="/tracking" element={<RoleGuard><DonationTracking /></RoleGuard>} />
             <Route path="/deliveries" element={<RoleGuard><Deliveries /></RoleGuard>} />
+            <Route path="/history" element={<RoleGuard><DonationHistory /></RoleGuard>} />
             <Route path="/needs" element={<RoleGuard><MedicalNeeds /></RoleGuard>} />
             <Route path="/chat" element={<RoleGuard><DonorChat /></RoleGuard>} />
             <Route path="/ngos" element={<RoleGuard><NGODirectory /></RoleGuard>} />
