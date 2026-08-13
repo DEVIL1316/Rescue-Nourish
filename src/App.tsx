@@ -14,6 +14,7 @@ import NGODirectory from "./pages/donation/NGODirectory";
 import Profile from "./pages/donation/Profile";
 import DonationTracking from "./pages/donation/DonationTracking";
 import Deliveries from "./pages/donation/Deliveries";
+import DonationHistory from "./pages/donation/DonationHistory";
 import Notifications from "./pages/donation/Notifications";
 import Analytics from "./pages/donation/Analytics";
 import AdminDashboard from "./pages/donation/AdminDashboard";
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/" element={<RoleGuard><FoodDonations /></RoleGuard>} />
             <Route path="/tracking" element={<RoleGuard><DonationTracking /></RoleGuard>} />
             <Route path="/deliveries" element={<RoleGuard><Deliveries /></RoleGuard>} />
+            <Route path="/history" element={<RoleGuard><DonationHistory /></RoleGuard>} />
             <Route path="/needs" element={<RoleGuard><MedicalNeeds /></RoleGuard>} />
             <Route path="/chat" element={<RoleGuard><DonorChat /></RoleGuard>} />
             <Route path="/ngos" element={<RoleGuard><NGODirectory /></RoleGuard>} />
