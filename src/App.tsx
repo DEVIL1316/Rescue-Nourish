@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useRole } from "@/hooks/useRole";
+import { useAuth } from "@/hooks/useAuth";
 import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/donation/Login";
@@ -28,7 +29,9 @@ const queryClient = new QueryClient();
 function RoleGuard({ children }: { children: React.ReactNode }) {
   const { role } = useRole();
   const { language } = useLanguage();
-  if (!role) return <Navigate to="/welcome" replace />;
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!role || !user) return <Navigate to="/welcome" replace />;
   if (!language) return <Navigate to="/select-language" replace />;
   return <>{children}</>;
 }

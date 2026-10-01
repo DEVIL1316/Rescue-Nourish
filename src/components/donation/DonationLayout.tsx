@@ -1,6 +1,9 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useRole } from '@/hooks/useRole';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 import { useLanguage, LANGUAGES, Language } from '@/contexts/LanguageContext';
 import { Heart, Utensils, Stethoscope, MessageCircle, Building2, LogOut, HandHeart, UserCog, BarChart3, Truck, Bell, Eye, Shield, Brain, Languages, PackageSearch, History as HistoryIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,6 +16,7 @@ import {
 
 export function DonationLayout({ children }: { children: ReactNode }) {
   const { role, clearRole } = useRole();
+  const { user } = useAuth();
   const { language, setLanguage, t } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
@@ -42,10 +46,33 @@ export function DonationLayout({ children }: { children: ReactNode }) {
           ? navItems.filter(item => !['/watchlist', '/analytics', '/smart-matching'].includes(item.path))
           : navItems;
 
-  const handleLeave = () => {
+  const handleLeave = async () => {
+    await supabase.auth.signOut();
     clearRole();
     navigate('/welcome');
   };
+
+  const [unread, setUnread] = useState(0);
+  useEffect(() => {
+    if (!user) return;
+    const refresh = () =>
+      supabase.from('notifications').select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id).eq('is_read', false)
+        .then(({ count }) => setUnread(count ?? 0));
+    refresh();
+    const channel = supabase
+      .channel(`layout-notif-${user.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, (payload) => {
+        if (payload.eventType === 'INSERT' && location.pathname !== '/notifications') {
+          const n = payload.new as { title: string; message: string };
+          toast({ title: n.title, description: n.message });
+        }
+        refresh();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const currentLang = LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
 
