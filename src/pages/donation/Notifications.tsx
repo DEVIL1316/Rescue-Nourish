@@ -9,6 +9,7 @@ import { toast } from '@/hooks/use-toast';
 
 const typeIcons: Record<string, typeof Bell> = {
   info: Info,
+  donation: Bell,
   tracking: Truck,
   message: MessageCircle,
 };
@@ -51,6 +52,13 @@ export default function Notifications() {
     await supabase.from('notifications').update({ is_read: true }).eq('user_id', user!.id).eq('is_read', false);
     setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
     toast({ title: 'All notifications marked as read' });
+  };
+
+  const acceptDonation = async (n: any) => {
+    const { data, error } = await supabase.rpc('accept_donation' as any, { _id: n.related_id });
+    if (error) { toast({ title: 'Could not accept', description: error.message, variant: 'destructive' }); return; }
+    toast(data ? { title: 'Donation accepted', description: 'The donor has been notified.' } : { title: 'Already taken', description: 'Someone else accepted this donation first.' });
+    markAsRead(n.id);
   };
 
   const deleteNotification = async (id: string) => {
@@ -101,6 +109,11 @@ export default function Notifications() {
                       <p className={`font-semibold text-sm ${n.is_read ? 'text-gray-500' : 'text-emerald-800'}`}>{n.title}</p>
                       <p className="text-xs text-gray-500 mt-0.5">{n.message}</p>
                       <p className="text-[10px] text-gray-400 mt-1">{new Date(n.created_at).toLocaleString()}</p>
+                      {n.type === 'donation' && n.related_id && !n.is_read && (
+                        <Button size="sm" onClick={() => acceptDonation(n)} className="mt-2 h-7 bg-emerald-600 hover:bg-emerald-700">
+                          Accept food
+                        </Button>
+                      )}
                     </div>
                     <div className="flex gap-1">
                       {!n.is_read && (

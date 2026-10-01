@@ -5,6 +5,7 @@ import { Heart, Users, HandHeart, Home, Shield, QrCode, ChevronRight, ArrowLeft 
 import { Button } from '@/components/ui/button';
 import { QRCodeSVG } from 'qrcode.react';
 import { buildQrLoginUrl } from '@/lib/qrLogin';
+import { PhoneOtpLogin } from '@/components/donation/PhoneOtpLogin';
 
 type RoleDef = {
   value: AppRole;
@@ -32,18 +33,26 @@ export default function Login() {
   const [qrNewSession, setQrNewSession] = useState(false);
   const qrLoginUrl = buildQrLoginUrl(selectedQRRole, qrNewSession);
 
+  const [pendingRole, setPendingRole] = useState<AppRole | null>(null);
+  const [tabScope, setTabScope] = useState(false);
+
   useEffect(() => {
     const roleParam = searchParams.get('role') as AppRole | null;
     const sessionMode = searchParams.get('session');
     if (roleParam && roles.some(r => r.value === roleParam)) {
-      setRole(roleParam, sessionMode === 'new' ? 'tab' : 'persistent');
-      navigate('/', { replace: true });
+      setTabScope(sessionMode === 'new');
+      setPendingRole(roleParam);
+      setShowQR(false);
     }
-  }, [searchParams, setRole, navigate]);
+  }, [searchParams]);
 
   const handleSelect = (role: AppRole) => {
-    setRole(role);
-    navigate('/');
+    setPendingRole(role);
+  };
+
+  const handleVerified = (role: AppRole) => {
+    setRole(role, tabScope ? 'tab' : 'persistent');
+    navigate('/', { replace: true });
   };
 
   return (
@@ -70,7 +79,9 @@ export default function Login() {
           </p>
         </div>
 
-        {!showQR ? (
+        {pendingRole ? (
+          <PhoneOtpLogin role={pendingRole} onBack={() => setPendingRole(null)} onVerified={handleVerified} />
+        ) : !showQR ? (
           <>
             {/* Bento Grid */}
             <div className="grid grid-cols-12 gap-5 w-full mb-12">

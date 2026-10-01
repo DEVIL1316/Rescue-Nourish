@@ -1,6 +1,9 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useRole } from '@/hooks/useRole';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 import { useLanguage, LANGUAGES, Language } from '@/contexts/LanguageContext';
 import { Heart, Utensils, Stethoscope, MessageCircle, Building2, LogOut, HandHeart, UserCog, BarChart3, Truck, Bell, Eye, Shield, Brain, Languages, PackageSearch, History as HistoryIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,6 +16,7 @@ import {
 
 export function DonationLayout({ children }: { children: ReactNode }) {
   const { role, clearRole } = useRole();
+  const { user } = useAuth();
   const { language, setLanguage, t } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
@@ -42,10 +46,33 @@ export function DonationLayout({ children }: { children: ReactNode }) {
           ? navItems.filter(item => !['/watchlist', '/analytics', '/smart-matching'].includes(item.path))
           : navItems;
 
-  const handleLeave = () => {
+  const handleLeave = async () => {
+    await supabase.auth.signOut();
     clearRole();
     navigate('/welcome');
   };
+
+  const [unread, setUnread] = useState(0);
+  useEffect(() => {
+    if (!user) return;
+    const refresh = () =>
+      supabase.from('notifications').select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id).eq('is_read', false)
+        .then(({ count }) => setUnread(count ?? 0));
+    refresh();
+    const channel = supabase
+      .channel(`layout-notif-${user.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, (payload) => {
+        if (payload.eventType === 'INSERT' && location.pathname !== '/notifications') {
+          const n = payload.new as { title: string; message: string };
+          toast({ title: n.title, description: n.message });
+        }
+        refresh();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const currentLang = LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
 
@@ -98,6 +125,9 @@ export function DonationLayout({ children }: { children: ReactNode }) {
                   >
                     <item.icon className="h-4 w-4" />
                     <span className="ml-1">{item.label}</span>
+                    {item.path === '/notifications' && unread > 0 && (
+                      <span className="ml-1 rounded-full bg-orange-500 text-white text-[10px] px-1.5 font-mono">{unread}</span>
+                    )}
                   </Button>
                 </Link>
               );
@@ -140,7 +170,10 @@ export function DonationLayout({ children }: { children: ReactNode }) {
           {allNavItems.map(item => {
             const active = location.pathname === item.path;
             return (
-              <Link key={item.path} to={item.path} className="flex flex-col items-center gap-0.5">
+              <Link key={item.path} to={item.path} className="relative flex flex-col items-center gap-0.5">
+                {item.path === '/notifications' && unread > 0 && (
+                  <span className="absolute -top-1 right-0 rounded-full bg-orange-500 text-white text-[9px] px-1 font-mono">{unread}</span>
+                )}
                 <item.icon className={`h-5 w-5 ${active ? 'text-emerald-600' : 'text-gray-400'}`} />
                 <span className={`text-[10px] ${active ? 'text-emerald-600 font-semibold' : 'text-gray-400'}`}>
                   {item.label.split(' ')[0]}
