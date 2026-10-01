@@ -125,6 +125,9 @@ export function DonationLayout({ children }: { children: ReactNode }) {
                   >
                     <item.icon className="h-4 w-4" />
                     <span className="ml-1">{item.label}</span>
+                    {item.path === '/notifications' && unread > 0 && (
+                      <span className="ml-1 rounded-full bg-orange-500 text-white text-[10px] px-1.5 font-mono">{unread}</span>
+                    )}
                   </Button>
                 </Link>
               );
@@ -167,7 +170,10 @@ export function DonationLayout({ children }: { children: ReactNode }) {
           {allNavItems.map(item => {
             const active = location.pathname === item.path;
             return (
-              <Link key={item.path} to={item.path} className="flex flex-col items-center gap-0.5">
+              <Link key={item.path} to={item.path} className="relative flex flex-col items-center gap-0.5">
+                {item.path === '/notifications' && unread > 0 && (
+                  <span className="absolute -top-1 right-0 rounded-full bg-orange-500 text-white text-[9px] px-1 font-mono">{unread}</span>
+                )}
                 <item.icon className={`h-5 w-5 ${active ? 'text-emerald-600' : 'text-gray-400'}`} />
                 <span className={`text-[10px] ${active ? 'text-emerald-600 font-semibold' : 'text-gray-400'}`}>
                   {item.label.split(' ')[0]}
