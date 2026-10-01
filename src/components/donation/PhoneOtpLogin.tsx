@@ -37,7 +37,14 @@ export function PhoneOtpLogin({ role, onBack, onVerified }: Props) {
     });
     setBusy(false);
     if (error) {
-      toast({ title: 'Could not send OTP', description: error.message, variant: 'destructive' });
+      const notSetUp = /phone provider/i.test(error.message) || (error as any).code === 'phone_provider_disabled';
+      toast({
+        title: 'Could not send OTP',
+        description: notSetUp
+          ? 'SMS sending is not set up yet. Please ask the app owner to enable phone login.'
+          : error.message,
+        variant: 'destructive',
+      });
       return;
     }
     toast({ title: 'OTP sent', description: `A 6-digit code was sent to ${fullPhone}` });
