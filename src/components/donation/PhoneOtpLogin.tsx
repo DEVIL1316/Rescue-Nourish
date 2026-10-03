@@ -31,10 +31,42 @@ export function PhoneOtpLogin({ role, onBack, onVerified }: Props) {
     const { data: roleRow } = await supabase
       .from('user_roles').select('role').eq('user_id', userId).limit(1).maybeSingle();
     const dbRole = (roleRow?.role as AppRole) || role;
-    if (dbRole !== role) {
-      toast({ title: 'Signed in', description: `This account is registered as ${dbRole.replace('_', ' ')}.` });
-    }
+    const { data: prof } = await supabase
+      .from('profiles').select('full_name').eq('user_id', userId).maybeSingle();
+    const name = prof?.full_name?.trim() || email.split('@')[0];
+    const roleLabel = dbRole.replace('_', ' ');
+    await supabase.from('notifications').insert({
+      user_id: userId,
+      title: 'Login successful',
+      message: `Dear ${name}, you're logged in to Rescue & Nourish as ${roleLabel}.`,
+      type: 'info',
+    });
+    toast({ title: `Welcome, ${name}`, description: `Logged in as ${roleLabel}.` });
     onVerified(dbRole);
+  };
+
+  const forgotPassword = async () => {
+    if (!emailValid) {
+      toast({ title: 'Enter your email first', description: 'Type your email above, then tap "Forgot password?".' });
+      return;
+    }
+    setBusy(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setBusy(false);
+    toast(error
+      ? { title: 'Could not send reset email', description: friendly(error.message), variant: 'destructive' }
+      : { title: 'Check your email', description: 'We sent a link to set a new password.' });
+  };
+
+  const friendly = (m = '') => {
+    if (/invalid login credentials/i.test(m)) return 'Wrong email or password. If you signed up with an email code before, tap "Forgot password?" to set one.';
+    if (/already registered/i.test(m)) return 'This email already has an account. Please sign in instead.';
+    if (/weak|easy to guess/i.test(m)) return 'That password is too easy to guess. Use a longer one with numbers and symbols.';
+    if (/rate limit|only request this after/i.test(m)) return 'Too many emails sent recently. Please wait a few minutes and try again.';
+    if (/not confirmed/i.test(m)) return 'Please confirm your email first using the link we sent you.';
+    return m || 'Something went wrong. Please try again.';
   };
 
   const submit = async () => {
@@ -51,28 +83,25 @@ export function PhoneOtpLogin({ role, onBack, onVerified }: Props) {
           },
         });
         if (error) throw error;
+        if (data.user && (data.user.identities?.length ?? 0) === 0) {
+          toast({ title: 'Account exists', description: friendly('already registered') });
+          setMode('signin');
+          return;
+        }
         if (!data.session) {
-          toast({
-            title: 'Check your email',
-            description: 'We sent a confirmation link. Confirm it, then come back and sign in.',
-          });
+          toast({ title: 'Check your email', description: 'We sent a confirmation link. Confirm it, then sign in.' });
           setMode('signin');
           return;
         }
         if (data.user) await finish(data.user.id);
       } else {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password,
-        });
+        const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) throw error;
         if (data.user) await finish(data.user.id);
       }
     } catch (error: any) {
-      const msg = /invalid login credentials/i.test(error?.message)
-        ? 'Wrong email or password. New here? Switch to "Create account" below.'
-        : error?.message || 'Something went wrong. Please try again.';
-      toast({ title: mode === 'signup' ? 'Could not create account' : 'Could not sign in', description: msg, variant: 'destructive' });
+      if (/already registered/i.test(error?.message)) setMode('signin');
+      toast({ title: mode === 'signup' ? 'Could not create account' : 'Could not sign in', description: friendly(error?.message), variant: 'destructive' });
     } finally {
       setBusy(false);
     }
@@ -119,6 +148,12 @@ export function PhoneOtpLogin({ role, onBack, onVerified }: Props) {
           />
         </div>
 
+        {mode === 'signin' && (
+          <button type="button" onClick={forgotPassword} disabled={busy}
+            className="block ml-auto -mt-2 text-xs text-emerald-700 underline">
+            Forgot password?
+          </button>
+        )}
         <Button onClick={submit} disabled={!valid || busy} className="w-full bg-emerald-700 hover:bg-emerald-800">
           {busy ? 'Please wait…' : mode === 'signin' ? 'Sign in' : 'Create account'}
         </Button>
