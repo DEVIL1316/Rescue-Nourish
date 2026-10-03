@@ -110,9 +110,14 @@ export default function Notifications() {
                       <p className="text-xs text-gray-500 mt-0.5">{n.message}</p>
                       <p className="text-[10px] text-gray-400 mt-1">{new Date(n.created_at).toLocaleString()}</p>
                       {n.type === 'donation' && n.related_id && !n.is_read && (
-                        <Button size="sm" onClick={() => acceptDonation(n)} className="mt-2 h-7 bg-emerald-600 hover:bg-emerald-700">
-                          Accept food
-                        </Button>
+                        <div className="mt-2 flex gap-2">
+                          <Button size="sm" onClick={() => acceptDonation(n)} className="h-7 bg-emerald-600 hover:bg-emerald-700">
+                            Accept food
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => markAsRead(n.id)} className="h-7 border-emerald-200 text-emerald-700">
+                            Ignore
+                          </Button>
+                        </div>
                       )}
                     </div>
                     <div className="flex gap-1">

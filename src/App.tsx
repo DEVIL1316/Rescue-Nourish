@@ -23,6 +23,7 @@ import Watchlist from "./pages/donation/Watchlist";
 import SmartMatching from "./pages/donation/SmartMatching";
 import Sessions from "./pages/donation/Sessions";
 import SelectLanguage from "./pages/donation/SelectLanguage";
+import ResetPassword from "./pages/donation/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/welcome" element={<Login />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/select-language" element={<LanguageOnlyGuard><SelectLanguage /></LanguageOnlyGuard>} />
             <Route path="/" element={<RoleGuard><FoodDonations /></RoleGuard>} />
             <Route path="/tracking" element={<RoleGuard><DonationTracking /></RoleGuard>} />
