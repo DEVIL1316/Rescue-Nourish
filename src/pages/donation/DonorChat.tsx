@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useRole, AppRole } from '@/hooks/useRole';
+import { useAuth } from '@/hooks/useAuth';
 import { DonationLayout } from '@/components/donation/DonationLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ type Intent = 'request' | 'donate' | 'help';
 
 type ChatMessage = {
   id: string;
+  senderId: string;
   channel: string;
   senderRole: AppRole;
   senderName: string;
@@ -59,27 +61,9 @@ function channelAllowsRole(channelId: string, role: AppRole): boolean {
   return false;
 }
 
-function storageKey(channel: string) {
-  return `chat_messages_${channel}`;
-}
-
-function loadMessages(channel: string): ChatMessage[] {
-  try {
-    const raw = localStorage.getItem(storageKey(channel));
-    return raw ? (JSON.parse(raw) as ChatMessage[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveMessages(channel: string, msgs: ChatMessage[]) {
-  // keep last 200 per channel
-  const trimmed = msgs.slice(-200);
-  localStorage.setItem(storageKey(channel), JSON.stringify(trimmed));
-}
-
 export default function DonorChat() {
   const { role } = useRole();
+  const { user } = useAuth();
   const profile = useMemo(() => {
     try {
       const raw = localStorage.getItem('user_profile');
@@ -94,37 +78,77 @@ export default function DonorChat() {
   const availableChannels = CHANNELS.filter(c => channelAllowsRole(c.id, myRole));
 
   const [activeChannel, setActiveChannel] = useState<string>(availableChannels[0]?.id ?? 'all');
-  const [messages, setMessages] = useState<ChatMessage[]>(() => loadMessages(activeChannel));
+  const [allMessages, setAllMessages] = useState<ChatMessage[]>([]);
   const [intent, setIntent] = useState<Intent>(myRole === 'donor' ? 'donate' : 'request');
   const [draft, setDraft] = useState('');
+  const [sending, setSending] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
-  // Switch channel: reload from localStorage
-  useEffect(() => {
-    setMessages(loadMessages(activeChannel));
-  }, [activeChannel]);
+  const messages = allMessages.filter(message => message.channel === activeChannel);
 
-  // Realtime broadcast subscription per channel
+  // Load messages visible to this account; chat history is shared across devices.
   useEffect(() => {
-    const channel = supabase.channel(`rescue-chat:${activeChannel}`, {
-      config: { broadcast: { self: false } },
-    });
+    if (!user?.id) {
+      setAllMessages([]);
+      return;
+    }
 
-    channel
-      .on('broadcast', { event: 'message' }, (payload) => {
-        const msg = payload.payload as ChatMessage;
-        if (!msg?.id) return;
-        setMessages(prev => {
-          if (prev.some(m => m.id === msg.id)) return prev;
-          const next = [...prev, msg];
-          saveMessages(activeChannel, next);
-          return next;
+    let refreshTimer: number | undefined;
+    let cancelled = false;
+    const refreshMessages = async () => {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('id, sender_id, receiver_id, content, created_at')
+        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+        .order('created_at', { ascending: true })
+        .limit(1000);
+
+      if (cancelled) return;
+      if (error) {
+        toast({ title: 'Could not load chat messages', description: error.message, variant: 'destructive' });
+        return;
+      }
+
+      const uniqueMessages = new Map<string, ChatMessage>();
+      for (const row of data ?? []) {
+        const tagged = row.content.match(/^\[([a-z-]+)\|([a-z_]+)\]\s*([\s\S]*)$/);
+        const channelId = tagged?.[1] ?? 'all';
+        const messageRole = tagged?.[2] as AppRole | undefined;
+        if (!CHANNELS.some(channel => channel.id === channelId)) continue;
+
+        const key = `${row.sender_id}:${row.created_at}:${row.content}`;
+        if (uniqueMessages.has(key)) continue;
+
+        const isMine = row.sender_id === user.id;
+        uniqueMessages.set(key, {
+          id: row.id,
+          senderId: row.sender_id,
+          channel: channelId,
+          senderRole: messageRole && messageRole in roleLabel ? messageRole : (isMine ? myRole : 'donor'),
+          senderName: isMine ? senderName : 'Community member',
+          intent: 'help',
+          content: tagged?.[3] ?? row.content,
+          createdAt: new Date(row.created_at).getTime(),
         });
+      }
+      setAllMessages([...uniqueMessages.values()]);
+    };
+
+    void refreshMessages();
+    const channel = supabase
+      .channel(`chat-messages-${user.id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
+        if (refreshTimer !== undefined) window.clearTimeout(refreshTimer);
+        refreshTimer = window.setTimeout(() => { void refreshMessages(); }, 120);
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
-  }, [activeChannel]);
+    return () => {
+      cancelled = true;
+      if (refreshTimer !== undefined) window.clearTimeout(refreshTimer);
+      void supabase.removeChannel(channel);
+    };
+  }, [user?.id, myRole, senderName]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -133,41 +157,26 @@ export default function DonorChat() {
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     const text = draft.trim();
-    if (!text) return;
+    if (!text || !user?.id || sending) return;
     if (text.length > 1000) {
       toast({ title: 'Message too long', description: 'Keep it under 1000 characters.', variant: 'destructive' });
       return;
     }
 
-    const msg: ChatMessage = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-      channel: activeChannel,
-      senderRole: myRole,
-      senderName,
-      intent,
-      content: text,
-      createdAt: Date.now(),
-    };
-
-    // optimistic local append + persist
-    setMessages(prev => {
-      const next = [...prev, msg];
-      saveMessages(activeChannel, next);
-      return next;
+    setSending(true);
+    const { error } = await supabase.rpc('send_chat_message', {
+      _content: text,
+      _channel: `${activeChannel}|${myRole}|${intent}`,
     });
+    setSending(false);
+    if (error) {
+      toast({ title: 'Message not sent', description: error.message, variant: 'destructive' });
+      return;
+    }
     setDraft('');
-
-    // broadcast to other tabs / users
-    const ch = supabase.channel(`rescue-chat:${activeChannel}`);
-    await ch.subscribe(async (status) => {
-      if (status === 'SUBSCRIBED') {
-        await ch.send({ type: 'broadcast', event: 'message', payload: msg });
-        supabase.removeChannel(ch);
-      }
-    });
   };
 
-  const activeChannelMeta = CHANNELS.find(c => c.id === activeChannel)!;
+  const activeChannelMeta = CHANNELS.find(c => c.id === activeChannel) ?? CHANNELS[0];
 
   return (
     <DonationLayout>
@@ -228,8 +237,8 @@ export default function DonorChat() {
 
             <CardContent className="flex-1 overflow-y-auto p-4 space-y-3 max-h-[420px]">
               {messages.map(m => {
-                const mine = m.senderName === senderName && m.senderRole === myRole;
-                const intentMeta = INTENTS.find(i => i.id === m.intent)!;
+                const mine = m.senderId === user?.id;
+                const intentMeta = INTENTS.find(i => i.id === m.intent) ?? INTENTS[2];
                 return (
                   <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[80%] ${mine ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
@@ -294,7 +303,7 @@ export default function DonorChat() {
                   maxLength={1000}
                   className="flex-1"
                 />
-                <Button type="submit" size="icon" className="bg-emerald-600 hover:bg-emerald-700">
+                <Button type="submit" size="icon" disabled={sending || !draft.trim()} className="bg-emerald-600 hover:bg-emerald-700">
                   <Send className="h-4 w-4" />
                 </Button>
               </form>
