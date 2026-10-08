@@ -111,7 +111,7 @@ export default function DonorChat() {
 
       const uniqueMessages = new Map<string, ChatMessage>();
       for (const row of data ?? []) {
-        const tagged = row.content.match(/^\[([a-z-]+)\|([a-z_]+)\]\s*([\s\S]*)$/);
+        const tagged = row.content.match(/^\[([a-z-]+)\|([a-z_]+)\|([a-z]+)\]\s*([\s\S]*)$/);
         const channelId = tagged?.[1] ?? 'all';
         const messageRole = tagged?.[2] as AppRole | undefined;
         if (!CHANNELS.some(channel => channel.id === channelId)) continue;
@@ -126,8 +126,8 @@ export default function DonorChat() {
           channel: channelId,
           senderRole: messageRole && messageRole in roleLabel ? messageRole : (isMine ? myRole : 'donor'),
           senderName: isMine ? senderName : 'Community member',
-          intent: 'help',
-          content: tagged?.[3] ?? row.content,
+          intent: tagged?.[3] && INTENTS.some(option => option.id === tagged[3]) ? tagged[3] as Intent : 'help',
+          content: tagged?.[4] ?? row.content,
           createdAt: new Date(row.created_at).getTime(),
         });
       }
