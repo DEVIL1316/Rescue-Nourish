@@ -556,6 +556,10 @@ export type Database = {
           needs_description: string
         }[]
       }
+      send_chat_message: {
+        Args: { _channel: string; _content: string }
+        Returns: number
+      }
     }
     Enums: {
       app_role: "donor" | "ngo" | "admin" | "orphanage_member"

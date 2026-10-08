@@ -8,6 +8,20 @@
       "when": 1791382559272,
       "tag": "0000_exclude_anonymous_sessions_from_app_data",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791460494287,
+      "tag": "0001_persist_group_chat_and_notify_members",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791460641464,
+      "tag": "0002_tag_chat_messages_and_clean_notifications",
+      "breakpoints": true
     }
   ]
 }
