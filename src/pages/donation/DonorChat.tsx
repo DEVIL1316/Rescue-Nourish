@@ -164,11 +164,18 @@ export default function DonorChat() {
     }
 
     setSending(true);
-    const { error } = await supabase.rpc('send_chat_message', {
-      _content: text,
-      _channel: `${activeChannel}|${myRole}|${intent}`,
-    });
-    setSending(false);
+    let error: { message: string } | null = null;
+    try {
+      const result = await supabase.rpc('send_chat_message', {
+        _content: text,
+        _channel: `${activeChannel}|${myRole}|${intent}`,
+      });
+      error = result.error;
+    } catch {
+      error = { message: 'Please check your connection and try again.' };
+    } finally {
+      setSending(false);
+    }
     if (error) {
       toast({ title: 'Message not sent', description: error.message, variant: 'destructive' });
       return;
