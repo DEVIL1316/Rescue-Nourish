@@ -22,6 +22,13 @@
       "when": 1791460641464,
       "tag": "0002_tag_chat_messages_and_clean_notifications",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791514774860,
+      "tag": "0003_fix_chat_intent_validation",
+      "breakpoints": true
     }
   ]
 }
