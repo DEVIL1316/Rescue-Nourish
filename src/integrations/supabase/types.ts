@@ -209,6 +209,30 @@ export type Database = {
           },
         ]
       }
+      location_geocodes: {
+        Row: {
+          created_at: string
+          id: string
+          latitude: number
+          location: string
+          longitude: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          latitude: number
+          location: string
+          longitude: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          latitude?: number
+          location?: string
+          longitude?: number
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string

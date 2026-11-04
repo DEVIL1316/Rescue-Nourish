@@ -29,6 +29,13 @@
       "when": 1791514774860,
       "tag": "0003_fix_chat_intent_validation",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793772176265,
+      "tag": "0004_add_location_geocodes_cache",
+      "breakpoints": true
     }
   ]
 }
