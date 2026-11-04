@@ -37,14 +37,17 @@ async function geocodeOne(address: string, c: Creds): Promise<{ lat: number; lng
     `${GATEWAY_URL}/maps/api/geocode/json?address=${encodeURIComponent(address)}&region=in`,
     { headers: gatewayHeaders(c) },
   );
+  const text = await res.text();
   if (!res.ok) {
-    const text = await res.text();
     console.error(`Geocode failed [${res.status}]: ${text}`);
+    throw new Error(`Geocode upstream error ${res.status}: ${text.slice(0, 200)}`);
+  }
+  const data = JSON.parse(text);
+  const loc = data?.results?.[0]?.geometry?.location;
+  if (!loc || typeof loc.lat !== 'number' || typeof loc.lng !== 'number') {
+    console.error(`Geocode returned no results: ${text.slice(0, 200)}`);
     return null;
   }
-  const data = await res.json();
-  const loc = data?.results?.[0]?.geometry?.location;
-  if (!loc || typeof loc.lat !== 'number' || typeof loc.lng !== 'number') return null;
   return { lat: loc.lat, lng: loc.lng };
 }
 
@@ -56,6 +59,7 @@ async function geocodeLocations(locations: string[], admin: SupabaseClient, c: C
   const cacheMap = new Map((cached ?? []).map((row: any) => [row.location, row]));
 
   const results: Array<{ location: string; latitude: number; longitude: number }> = [];
+  const errors: string[] = [];
   const misses: string[] = [];
   for (const loc of locations) {
     const row = cacheMap.get(loc);
@@ -64,15 +68,19 @@ async function geocodeLocations(locations: string[], admin: SupabaseClient, c: C
   }
 
   for (const loc of misses) {
-    const coords = await geocodeOne(`${loc}, ${LOCATION_SUFFIX}`, c);
-    if (!coords) continue;
-    results.push({ location: loc, latitude: coords.lat, longitude: coords.lng });
-    await admin.from('location_geocodes').upsert(
-      { location: loc, latitude: coords.lat, longitude: coords.lng },
-      { onConflict: 'location' },
-    );
+    try {
+      const coords = await geocodeOne(`${loc}, ${LOCATION_SUFFIX}`, c);
+      if (!coords) continue;
+      results.push({ location: loc, latitude: coords.lat, longitude: coords.lng });
+      await admin.from('location_geocodes').upsert(
+        { location: loc, latitude: coords.lat, longitude: coords.lng },
+        { onConflict: 'location' },
+      );
+    } catch (e) {
+      errors.push(`${loc}: ${e?.message ?? 'geocode failed'}`);
+    }
   }
-  return results;
+  return { results, errors };
 }
 
 async function computeRoute(pickup: string, destination: string, c: Creds) {
