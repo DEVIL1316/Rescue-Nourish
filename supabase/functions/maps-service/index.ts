@@ -161,8 +161,8 @@ Deno.serve(async (req) => {
         .filter((l: unknown) => typeof l === 'string' && l.trim().length > 0 && l.length <= 120)
         .slice(0, 25);
       if (locations.length === 0) return json({ results: [] });
-      const results = await geocodeLocations([...new Set(locations)], admin, creds);
-      return json({ results });
+      const { results, errors } = await geocodeLocations([...new Set(locations)], admin, creds);
+      return json({ results, errors });
     }
 
     if (action === 'route') {
