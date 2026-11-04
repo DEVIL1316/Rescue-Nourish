@@ -20,6 +20,8 @@ import { Plus, Building2, MapPin, Phone, Mail, Globe, MessageCircle, CalendarDay
 import { toast } from '@/hooks/use-toast';
 import { LocationSelect } from '@/components/donation/LocationSelect';
 import { useNavigate } from 'react-router-dom';
+import { LocationMap, type MapMarker } from '@/components/donation/LocationMap';
+import { geocodeLocations } from '@/lib/mapsApi';
 
 export default function NGODirectory() {
   const { user } = useAuth();
@@ -30,12 +32,23 @@ export default function NGODirectory() {
   const [selectedNgo, setSelectedNgo] = useState<any | null>(null);
   const [relatedNeeds, setRelatedNeeds] = useState<any[]>([]);
   const [loadingDetails, setLoadingDetails] = useState(false);
+  const [mapMarkers, setMapMarkers] = useState<MapMarker[]>([]);
 
   useEffect(() => { fetchNGOs(); }, []);
 
   const fetchNGOs = async () => {
     const { data } = await supabase.from('ngos').select('*, profiles!ngos_user_id_fkey(full_name)').order('created_at', { ascending: false });
     if (data) setNgos(data);
+
+    // Geocode NGO locations (cached in the backend) for the directory map.
+    const locations = [...new Set((data ?? []).map((n: any) => n.location).filter(Boolean))] as string[];
+    if (locations.length === 0) { setMapMarkers([]); return; }
+    try {
+      const results = await geocodeLocations(locations);
+      setMapMarkers(results.map(r => ({ lat: r.latitude, lng: r.longitude, title: r.location })));
+    } catch {
+      setMapMarkers([]);
+    }
   };
 
   const addNGO = async (e: React.FormEvent) => {
@@ -105,6 +118,14 @@ export default function NGODirectory() {
             <Plus className="h-4 w-4 mr-1" /> Register NGO
           </Button>
         </div>
+
+        {mapMarkers.length > 0 && (
+          <Card className="border-emerald-100 overflow-hidden">
+            <CardContent className="p-0">
+              <LocationMap markers={mapMarkers} height={340} />
+            </CardContent>
+          </Card>
+        )}
 
         {showAdd && (
           <Card className="border-emerald-200 bg-emerald-50/50">

@@ -13,6 +13,7 @@ import { LocationSelect } from '@/components/donation/LocationSelect';
 import { Truck, MapPin, Clock, Route, Plus, X, PackageCheck } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { estimateRoute, formatEta } from '@/lib/distance';
+import { fetchGoogleRoute, type GoogleRoute } from '@/lib/mapsApi';
 
 const STATUS_FLOW = ['assigned', 'picked_up', 'in_transit', 'delivered'] as const;
 
@@ -51,10 +52,23 @@ export default function Deliveries() {
     destination_location: '',
     assigned_name: '',
   });
+  const [realRoute, setRealRoute] = useState<GoogleRoute | null>(null);
+  const [routeLoading, setRouteLoading] = useState(false);
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (!form.pickup_location || !form.destination_location) { setRealRoute(null); return; }
+    let cancelled = false;
+    setRouteLoading(true);
+    fetchGoogleRoute(form.pickup_location, form.destination_location)
+      .then(r => { if (!cancelled) setRealRoute(r); })
+      .catch(() => { if (!cancelled) setRealRoute(null); })
+      .finally(() => { if (!cancelled) setRouteLoading(false); });
+    return () => { cancelled = true; };
+  }, [form.pickup_location, form.destination_location]);
 
   const fetchData = async () => {
     const [delRes, donRes] = await Promise.all([
@@ -66,6 +80,9 @@ export default function Deliveries() {
   };
 
   const estimate = estimateRoute(form.pickup_location, form.destination_location);
+  const distanceKm = realRoute?.distanceKm ?? estimate.distanceKm;
+  const etaMinutes = realRoute?.durationMinutes ?? estimate.etaMinutes;
+  const routeLabel = realRoute ? 'Live route (Google Maps)' : 'Estimated route';
 
   const createDelivery = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,8 +94,8 @@ export default function Deliveries() {
       recipient_name: form.recipient_name || null,
       pickup_location: form.pickup_location || null,
       destination_location: form.destination_location || null,
-      distance_km: estimate.distanceKm,
-      eta_minutes: estimate.etaMinutes,
+      distance_km: distanceKm,
+      eta_minutes: etaMinutes,
       status: 'assigned',
     });
     if (error) {
@@ -220,11 +237,13 @@ export default function Deliveries() {
 
                 {form.pickup_location && form.destination_location && (
                   <div className="rounded-lg border border-emerald-200 bg-white p-3 text-xs text-emerald-800">
-                    <p className="font-semibold flex items-center gap-1"><Route className="h-3.5 w-3.5" /> Estimated route</p>
+                    <p className="font-semibold flex items-center gap-1"><Route className="h-3.5 w-3.5" /> {routeLoading ? 'Checking live route…' : routeLabel}</p>
                     <p className="text-emerald-600 mt-1">
-                      {estimate.label} · ~{estimate.distanceKm} km · ~{formatEta(estimate.etaMinutes)}
+                      {estimate.label} · ~{distanceKm} km · ~{formatEta(etaMinutes)}
                     </p>
-                    <p className="text-[10px] text-gray-500 mt-1">Estimates based on city zones and average traffic speed.</p>
+                    <p className="text-[10px] text-gray-500 mt-1">
+                      {realRoute ? 'Live distance and drive time from Google Maps.' : 'Fallback estimate based on city zones and average traffic speed.'}
+                    </p>
                   </div>
                 )}
 
