@@ -29,6 +29,20 @@
       "when": 1791514774860,
       "tag": "0003_fix_chat_intent_validation",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793882988841,
+      "tag": "0004_route_chat_to_eligible_roles",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793883045957,
+      "tag": "0005_persist_chat_and_notify_room_members",
+      "breakpoints": true
     }
   ]
 }
