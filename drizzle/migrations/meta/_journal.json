@@ -36,6 +36,13 @@
       "when": 1793882988841,
       "tag": "0004_route_chat_to_eligible_roles",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793883045957,
+      "tag": "0005_persist_chat_and_notify_room_members",
+      "breakpoints": true
     }
   ]
 }
