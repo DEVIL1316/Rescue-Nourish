@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { channelAllowsRole, uniqueChatRows } from './chat';
+import { channelAllowsRole, parseChatContent, uniqueChatRows } from './chat';
 
 describe('two-way chat', () => {
   test('donors and NGOs can both reply in their shared channel', () => {
@@ -19,5 +19,21 @@ describe('two-way chat', () => {
     const sent = { id: '1', sender_id: 'donor', content: 'Food available', created_at: '2026-10-13T05:00:00Z' };
     const reply = { id: '3', sender_id: 'ngo', content: 'We can collect', created_at: '2026-10-13T05:01:00Z' };
     expect(uniqueChatRows([reply, sent, { ...sent, id: '2' }])).toEqual([sent, reply]);
+  });
+  test('reads room, sender role, intent, and message from saved chat rows', () => {
+    expect(parseChatContent('[donor-ngo|ngo|request] Need rice for tomorrow')).toEqual({
+      channelId: 'donor-ngo',
+      role: 'ngo',
+      intent: 'request',
+      text: 'Need rice for tomorrow',
+    });
+  });
+  test('keeps older tagged messages readable', () => {
+    expect(parseChatContent('[donor-orphan] Food is ready')).toEqual({
+      channelId: 'donor-orphan',
+      role: null,
+      intent: null,
+      text: 'Food is ready',
+    });
   });
 });
