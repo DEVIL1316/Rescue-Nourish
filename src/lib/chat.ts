@@ -36,8 +36,8 @@ export function channelAllowsRole(channelId: string, role: AppRole): boolean {
   return false;
 }
 
-export function uniqueChatRows(rows: ChatRow[]): ChatRow[] {
-  const unique = new Map<string, ChatRow>();
+export function uniqueChatRows<T extends ChatRow>(rows: T[]): T[] {
+  const unique = new Map<string, T>();
   for (const row of rows) {
     const key = `${row.sender_id}:${row.created_at}:${row.content}`;
     if (!unique.has(key)) unique.set(key, row);
