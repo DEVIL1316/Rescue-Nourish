@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "sdk_version": "0.25.0",
+  "sdk_version": "3.4.0",
   "path": "/functions/v1/mcp",
   "auth": {
     "type": "oauth",
@@ -27,18 +27,18 @@
           "openWorldHint": false
         },
         "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
           "type": "object",
           "properties": {
             "limit": {
+              "default": 50,
+              "description": "Maximum number of NGOs to return.",
               "type": "integer",
               "minimum": 1,
-              "maximum": 200,
-              "default": 50,
-              "description": "Maximum number of NGOs to return."
+              "maximum": 200
             }
           },
-          "additionalProperties": false,
-          "$schema": "http://json-schema.org/draft-07/schema#"
+          "additionalProperties": false
         },
         "outputSchema": null
       },
@@ -52,18 +52,18 @@
           "openWorldHint": false
         },
         "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
           "type": "object",
           "properties": {
             "limit": {
+              "default": 50,
+              "description": "Maximum number of orphanages to return.",
               "type": "integer",
               "minimum": 1,
-              "maximum": 200,
-              "default": 50,
-              "description": "Maximum number of orphanages to return."
+              "maximum": 200
             }
           },
-          "additionalProperties": false,
-          "$schema": "http://json-schema.org/draft-07/schema#"
+          "additionalProperties": false
         },
         "outputSchema": null
       },
@@ -77,18 +77,18 @@
           "openWorldHint": false
         },
         "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
           "type": "object",
           "properties": {
             "limit": {
+              "default": 50,
+              "description": "Maximum number of open needs to return.",
               "type": "integer",
               "minimum": 1,
-              "maximum": 200,
-              "default": 50,
-              "description": "Maximum number of open needs to return."
+              "maximum": 200
             }
           },
-          "additionalProperties": false,
-          "$schema": "http://json-schema.org/draft-07/schema#"
+          "additionalProperties": false
         },
         "outputSchema": null
       }

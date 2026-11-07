@@ -13,6 +13,7 @@ import { LocationSelect } from '@/components/donation/LocationSelect';
 import { Truck, MapPin, Clock, Route, Plus, X, PackageCheck } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { estimateRoute, formatEta } from '@/lib/distance';
+import type { Database } from '@/integrations/supabase/types';
 
 const STATUS_FLOW = ['assigned', 'picked_up', 'in_transit', 'delivered'] as const;
 
@@ -95,13 +96,11 @@ export default function Deliveries() {
     const idx = STATUS_FLOW.indexOf(delivery.status);
     if (idx < 0 || idx >= STATUS_FLOW.length - 1) return;
     const next = STATUS_FLOW[idx + 1];
-    const stamps: Record<string, string> = {
-      picked_up: 'picked_up_at',
-      in_transit: 'in_transit_at',
-      delivered: 'delivered_at',
-    };
-    const patch: Record<string, any> = { status: next };
-    if (stamps[next]) patch[stamps[next]] = new Date().toISOString();
+    const patch: Database['public']['Tables']['deliveries']['Update'] = { status: next };
+    const timestamp = new Date().toISOString();
+    if (next === 'picked_up') patch.picked_up_at = timestamp;
+    if (next === 'in_transit') patch.in_transit_at = timestamp;
+    if (next === 'delivered') patch.delivered_at = timestamp;
 
     const { error } = await supabase.from('deliveries').update(patch).eq('id', delivery.id);
     if (error) {
