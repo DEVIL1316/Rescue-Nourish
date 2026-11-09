@@ -43,6 +43,13 @@
       "when": 1793883045957,
       "tag": "0005_persist_chat_and_notify_room_members",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794193421551,
+      "tag": "0006_private_chat_location_and_donation_cards",
+      "breakpoints": true
     }
   ]
 }
