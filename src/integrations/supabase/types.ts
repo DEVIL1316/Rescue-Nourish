@@ -235,26 +235,32 @@ export type Database = {
       }
       messages: {
         Row: {
+          attachment: Json | null
           content: string
           created_at: string
           id: string
           is_read: boolean
+          message_scope: string
           receiver_id: string
           sender_id: string
         }
         Insert: {
+          attachment?: Json | null
           content: string
           created_at?: string
           id?: string
           is_read?: boolean
+          message_scope?: string
           receiver_id: string
           sender_id: string
         }
         Update: {
+          attachment?: Json | null
           content?: string
           created_at?: string
           id?: string
           is_read?: boolean
+          message_scope?: string
           receiver_id?: string
           sender_id?: string
         }
@@ -545,6 +551,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      mark_private_messages_read: {
+        Args: { _partner: string }
+        Returns: number
+      }
       mcp_list_ngos: {
         Args: { _limit?: number }
         Returns: {
@@ -583,6 +593,10 @@ export type Database = {
       send_chat_message: {
         Args: { _channel: string; _content: string }
         Returns: number
+      }
+      send_private_message: {
+        Args: { _attachment?: Json; _content: string; _receiver: string }
+        Returns: string
       }
     }
     Enums: {
